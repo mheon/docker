@@ -255,6 +255,9 @@ func (container *Container) Start() (err error) {
 	if err := populateCommand(container, env); err != nil {
 		return err
 	}
+	if err := container.setupSecretFiles(); err != nil {
+		return err
+	}
 	if err := setupMountsForContainer(container); err != nil {
 		return err
 	}
@@ -271,6 +274,11 @@ func (container *Container) Start() (err error) {
 		if err := system.Unmount(container.runPath(), syscall.MNT_DETACH); err != nil {
 			return err
 		}
+	}
+
+	// Now the container is running, unmount the secrets on the host
+	if err := system.Unmount(container.secretsPath(), syscall.MNT_DETACH); err != nil {
+		return err
 	}
 
 	return nil
@@ -508,6 +516,7 @@ func (container *Container) cleanup() {
 	if !container.hostConfig.NoRunFs {
 		system.Unmount(container.runPath(), syscall.MNT_DETACH)
 	}
+	system.Unmount(container.secretsPath(), syscall.MNT_DETACH)
 
 	if err := container.Unmount(); err != nil {
 		log.Printf("%v: Failed to umount filesystem: %v", container.ID, err)
@@ -715,6 +724,10 @@ func (container *Container) hostConfigPath() string {
 
 func (container *Container) jsonPath() string {
 	return container.getRootResourcePath("config.json")
+}
+
+func (container *Container) secretsPath() string {
+	return container.getRootResourcePath("secrets")
 }
 
 // This method must be exported to be used from the lxc template
@@ -948,6 +961,28 @@ func (container *Container) verifyDaemonSettings() {
 	if container.daemon.sysInfo.IPv4ForwardingDisabled {
 		log.Printf("WARNING: IPv4 forwarding is disabled. Networking will not work")
 	}
+}
+
+func (container *Container) setupSecretFiles() error {
+	secretsPath := container.secretsPath()
+
+	if err := os.MkdirAll(secretsPath, 0700); err != nil {
+		return err
+	}
+
+	if err := system.Mount("tmpfs", secretsPath, "tmpfs", uintptr(syscall.MS_NOEXEC|syscall.MS_NOSUID|syscall.MS_NODEV), label.FormatMountLabel("", container.GetMountLabel())); err != nil {
+		return fmt.Errorf("mounting secret tmpfs: %s", err)
+	}
+
+	data, err := getHostSecretData()
+	if err != nil {
+		return err
+	}
+	for _, s := range data {
+		s.SaveTo(secretsPath)
+	}
+
+	return nil
 }
 
 func (container *Container) setupLinkedContainers() ([]string, error) {

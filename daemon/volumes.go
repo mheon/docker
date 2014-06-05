@@ -58,6 +58,8 @@ func setupMountsForContainer(container *Container) error {
 		mounts = append(mounts, *runMount)
 	}
 
+	mounts = append(mounts, execdriver.Mount{container.secretsPath(), "/run/secrets", true, true})
+
 	// Mount user specified volumes
 	// Note, these are not private because you may want propagation of (un)mounts from host
 	// volumes. For instance if you use -v /usr:/usr and the host later mounts /usr/share you
