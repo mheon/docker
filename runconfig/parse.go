@@ -67,8 +67,9 @@ func parseRun(cmd *flag.FlagSet, args []string, sysInfo *sysinfo.SysInfo) (*Conf
 		flCpuset          = cmd.String([]string{"-cpuset"}, "", "CPUs in which to allow execution (0-3, 0,1)")
 		flNetMode         = cmd.String([]string{"-net"}, "bridge", "Set the Network mode for the container\n'bridge': creates a new network stack for the container on the docker bridge\n'none': no networking for this container\n'container:<name|id>': reuses another container network stack\n'host': use the host network stack inside the contaner")
 		// For documentation purpose
-		_ = cmd.Bool([]string{"#sig-proxy", "-sig-proxy"}, true, "Proxify all received signal to the process (even in non-tty mode)")
-		_ = cmd.String([]string{"#name", "-name"}, "", "Assign a name to the container")
+		_    = cmd.Bool([]string{"#sig-proxy", "-sig-proxy"}, true, "Proxify all received signal to the process (even in non-tty mode)")
+		_    = cmd.String([]string{"#name", "-name"}, "", "Assign a name to the container")
+		help = cmd.Bool([]string{"#help", "-help"}, false, "Print usage")
 	)
 
 	cmd.Var(&flAttach, []string{"a", "-attach"}, "Attach to stdin, stdout or stderr.")
@@ -86,6 +87,10 @@ func parseRun(cmd *flag.FlagSet, args []string, sysInfo *sysinfo.SysInfo) (*Conf
 
 	if err := cmd.Parse(args); err != nil {
 		return nil, nil, cmd, err
+	}
+
+	if *help {
+		return nil, nil, cmd, nil
 	}
 
 	// Check if the kernel supports memory limit cgroup.

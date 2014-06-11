@@ -358,6 +358,12 @@ func (f *FlagSet) SetOutput(output io.Writer) {
 	f.output = output
 }
 
+// Returns the destination for usage and error messages.
+// If output is nil, os.Stderr is used.
+func (f *FlagSet) GetOutput() io.Writer {
+	return f.out()
+}
+
 // VisitAll visits the flags in lexicographical order, calling fn for each.
 // It visits all flags, even those not set.
 func (f *FlagSet) VisitAll(fn func(*Flag)) {
@@ -472,7 +478,7 @@ func defaultUsage(f *FlagSet) {
 // Usage prints to standard error a usage message documenting all defined command-line flags.
 // The function is a variable that may be changed to point to a custom function.
 var Usage = func() {
-	fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
+	fmt.Fprintf(CommandLine.output, "Usage of %s:\n", os.Args[0])
 	PrintDefaults()
 }
 
@@ -953,6 +959,13 @@ func (f *FlagSet) Parsed() bool {
 func Parse() {
 	// Ignore errors; CommandLine is set for ExitOnError.
 	CommandLine.Parse(os.Args[1:])
+}
+
+// SetOutput sets the destination for usage and error messages.
+// If output is nil, os.Stderr is used.
+func SetOutput(output io.Writer) {
+	// Ignore errors; CommandLine is set for ExitOnError.
+	CommandLine.SetOutput(output)
 }
 
 // Parsed returns true if the command-line flags have been parsed.

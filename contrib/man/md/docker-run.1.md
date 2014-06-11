@@ -15,6 +15,7 @@ docker-run - Run a process in an isolated container
 [**--expose**=*port*] [**-P**|**--publish-all**[=*false*]]
 [**-p**|**--publish**=*port-mappping*] [**-h**|**--hostname**=*hostname*]
 [**--rm**[=*false*]] [**--privileged**[=*false*]]
+[**--help]
 [**-i**|**--interactive**[=*false*]]
 [**-t**|**--tty**[=*false*]] [**--lxc-conf**=*options*]
 [**-n**|**--networking**[=*true*]]

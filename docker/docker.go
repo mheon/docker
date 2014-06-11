@@ -66,6 +66,7 @@ func main() {
 		flCert               = flag.String([]string{"-tlscert"}, dockerConfDir+defaultCertFile, "Path to TLS certificate file")
 		flKey                = flag.String([]string{"-tlskey"}, dockerConfDir+defaultKeyFile, "Path to TLS key file")
 		flSelinuxEnabled     = flag.Bool([]string{"-selinux-enabled"}, false, "Enable selinux support")
+		help                 = flag.Bool([]string{"#help", "-help"}, false, "Print usage")
 	)
 	flag.Var(&flDns, []string{"#dns", "-dns"}, "Force docker to use specific DNS servers")
 	flag.Var(&flDnsSearch, []string{"-dns-search"}, "Force Docker to use specific DNS search domains")
@@ -76,6 +77,11 @@ func main() {
 
 	if *flVersion {
 		showVersion()
+		return
+	}
+	if *help {
+		flag.SetOutput(os.Stdout)
+		flag.Usage()
 		return
 	}
 	if flHosts.Len() == 0 {
