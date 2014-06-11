@@ -5,13 +5,17 @@
 docker-pull - Pull an image or a repository from the registry
 
 # SYNOPSIS
-**docker pull** NAME[:TAG]
+**docker pull** [**--help] NAME[:TAG]
 
 # DESCRIPTION
 
 This command pulls down an image or a repository from the registry. If
 there is more than one image for a repository (e.g. fedora) then all
 images for that repository name are pulled down including any tags.
+
+# OPTIONS
+
+**--help  Print Usage statement
 
 # EXAMPLE
 

@@ -5,7 +5,7 @@
 docker-build - Build an image from a Dockerfile source at PATH
 
 # SYNOPSIS
-**docker build** [**--no-cache**[=*false*]] [**-q**|**--quiet**[=*false*]]
+**docker build** [**--help] [**--no-cache**[=*false*]] [**-q**|**--quiet**[=*false*]]
  [**--rm**] [**-t**|**--tag**=TAG] PATH | URL | -
 
 # DESCRIPTION
@@ -25,6 +25,8 @@ When a Git repository is set as the **URL**, the repository is used
 as context.
 
 # OPTIONS
+
+**--help  Print Usage statement
 
 **-q**, **--quiet**=*true*|*false*
    When set to true, suppress verbose build output. Default is *false*.

@@ -5,7 +5,7 @@
 docker-attach - Attach to a running container
 
 # SYNOPSIS
-**docker attach** **--no-stdin**[=*false*] **--sig-proxy**[=*true*] CONTAINER
+**docker attach** [**--help] **--no-stdin**[=*false*] **--sig-proxy**[=*true*] CONTAINER
 
 # DESCRIPTION
 If you **docker run** a container in detached mode (**-d**), you can reattach to
@@ -18,6 +18,9 @@ When you detach from a container the exit code will be returned to
 the client.
 
 # OPTIONS
+
+**--help  Print Usage statement
+
 **--no-stdin**=*true*|*false*
 When set to true, do not attach to stdin. The default is *false*.
 

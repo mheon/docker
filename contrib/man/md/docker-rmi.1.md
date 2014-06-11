@@ -6,7 +6,7 @@ docker-rmi \- Remove one or more images.
 
 # SYNOPSIS
 
-**docker rmi** [**-f**|**--force**[=*false*] IMAGE [IMAGE...]
+**docker rmi** [**--help] [**-f**|**--force**[=*false*] IMAGE [IMAGE...]
 
 # DESCRIPTION
 
@@ -16,6 +16,8 @@ container unless you use the **-f** option. To see all images on a host
 use the **docker images** command.
 
 # OPTIONS
+
+**--help  Print Usage statement
 
 **-f**, **--force**=*true*|*false*
    When set to true, force the removal of the image. The default is

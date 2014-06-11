@@ -5,7 +5,7 @@
 docker-start - Restart a stopped container
 
 # SYNOPSIS
-**docker start** [**a**|**--attach**[=*false*]] [**-i**|**--interactive**
+**docker start** [**a**|**--attach**[=*false*]] [**--help] [**-i**|**--interactive**
 [=*true*] CONTAINER [CONTAINER...]
 
 # DESCRIPTION
@@ -13,6 +13,9 @@ docker-start - Restart a stopped container
 Start a stopped container.
 
 # OPTION
+
+**--help  Print Usage statement
+
 **-a**, **--attach**=*true*|*false*
    When true attach to container's stdout/stderr and forward all signals to
 the process

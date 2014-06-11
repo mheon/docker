@@ -6,7 +6,7 @@ docker-login - Register or Login to a docker registry server.
 
 # SYNOPSIS
 **docker login** [**-e**|**-email**=""] [**-p**|**--password**=""]
- [**-u**|**--username**=""] [SERVER]
+[**--help] [**-u**|**--username**=""] [SERVER]
 
 # DESCRIPTION
 Register or Login to a docker registry server, if no server is
@@ -16,6 +16,8 @@ login to a private registry you can specify this by adding the server name.
 # OPTIONS
 **-e**, **--email**=""
    Email address
+
+**--help  Print Usage statement
 
 **-p**, **--password**=""
    Password

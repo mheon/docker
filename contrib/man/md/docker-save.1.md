@@ -5,7 +5,7 @@
 docker-save - Save an image to a tar archive (streamed to STDOUT by default)
 
 # SYNOPSIS
-**docker save** [**-o**|**--output**=""] IMAGE
+**docker save** [**--help] [**-o**|**--output**=""] IMAGE
 
 # DESCRIPTION
 Produces a tarred repository to the standard output stream. Contains all
@@ -14,6 +14,9 @@ parent layers, and all tags + versions, or specified repo:tag.
 Stream to a file instead of STDOUT by using **-o**.
 
 # OPTIONS
+
+**--help  Print Usage statement
+
 **-o**, **--output**=""
    Write to an file, instead of STDOUT
 

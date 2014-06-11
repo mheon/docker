@@ -4,13 +4,16 @@
 # NAME
 docker-events - Get real time events from the server
 
-**docker events** **--since**=""|*epoch-time*
+**docker events** [**--help] **--since**=""|*epoch-time*
 
 # DESCRIPTION
 Get event information from the Docker daemon. Information can include historical
 information and real-time information.
 
 # OPTIONS
+
+**--help  Print Usage statement
+
 **--since**=""
 Show previously created events and then stream. This can be in either
 seconds since epoch, or date string.

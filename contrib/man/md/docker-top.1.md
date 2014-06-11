@@ -5,12 +5,16 @@
 docker-top - Lookup the running processes of a container
 
 # SYNOPSIS
-**docker top** CONTAINER [ps-OPTION]
+**docker top** [**--help] CONTAINER [ps-OPTION]
 
 # DESCRIPTION
 
 Look up the running process of the container. ps-OPTION can be any of the
  options you would pass to a Linux ps command.
+
+# OPTIONS
+
+**--help  Print Usage statement
 
 # EXAMPLE
 

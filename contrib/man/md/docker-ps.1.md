@@ -6,6 +6,7 @@ docker-ps - List containers
 
 # SYNOPSIS
 **docker ps** [**-a**|**--all**=*false*] [**--before**=""]
+[**--help]
 [**-l**|**--latest**=*false*] [**-n**=*-1*] [**--no-trunc**=*false*]
 [**-q**|**--quiet**=*false*] [**-s**|**--size**=*false*]
 [**--since**=""]
@@ -24,6 +25,8 @@ default. Default is false.
 **--before**=""
    Show only container created before Id or Name, include non-running
 ones.
+
+**--help  Print Usage statement
 
 **-l**, **--latest**=*true*|*false*
    When true show only the latest created container, include non-running

@@ -5,13 +5,17 @@
 docker-push - Push an image or a repository to the registry
 
 # SYNOPSIS
-**docker push** NAME[:TAG]
+**docker push** [**--help] NAME[:TAG]
 
 # DESCRIPTION
 Push an image or a repository to a registry. The default registry is the Docker 
 Index located at [index.docker.io](https://index.docker.io/v1/). However the 
 image can be pushed to another, perhaps private, registry as demonstrated in 
 the example below.
+
+# OPTIONS
+
+**--help  Print Usage statement
 
 # EXAMPLE
 

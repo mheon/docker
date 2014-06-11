@@ -9,6 +9,7 @@ docker-run - Run a process in an isolated container
 [**-a**|**--attach**[=]] [**-c**|**--cpu-shares**[=0]
 [**-m**|**--memory**=*memory-limit*]
 [**--cidfile**=*file*] [**-d**|**--detach**[=*false*]] [**--dns**=*IP-address*]
+[**--help]
 [**--name**=*name*] [**-u**|**--user**=*username*|*uid*]
 [**--link**=*name*:*alias*]
 [**-e**|**--env**=*environment*] [**--entrypoint**=*command*]
@@ -100,6 +101,8 @@ containers port can be exposed to other containers in three ways: 1) The
 developer can expose the port using the EXPOSE parameter of the Dockerfile, 2)
 the operator can use the **--expose** option with **docker run**, or 3) the
 container can be started with the **--link**.
+
+**--help  Print Usage statement
 
 **-m**, **-memory**=*memory-limit*
    Allows you to constrain the memory available to a container. If the host

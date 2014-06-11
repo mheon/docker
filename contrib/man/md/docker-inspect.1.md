@@ -5,7 +5,7 @@
 docker-inspect - Return low-level information on a container/image
 
 # SYNOPSIS
-**docker inspect** [**-f**|**--format**="" CONTAINER|IMAGE
+**docker inspect** [**--help] [**-f**|**--format**="" CONTAINER|IMAGE
 [CONTAINER|IMAGE...]
 
 # DESCRIPTION
@@ -16,6 +16,9 @@ array. If a format is specified, the given template will be executed for
 each result.
 
 # OPTIONS
+
+**--help  Print Usage statement
+
 **-f**, **--format**=""
    The text/template package of Go describes all the details of the
 format. See examples section

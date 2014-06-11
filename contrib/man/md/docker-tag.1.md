@@ -5,7 +5,7 @@
 docker-tag - Tag an image in the repository
 
 # SYNOPSIS
-**docker tag** [**-f**|**--force**[=*false*]
+**docker tag** [**--help] [**-f**|**--force**[=*false*]
 IMAGE [REGISTRYHOST/][USERNAME/]NAME[:TAG]
 
 # DESCRIPTION

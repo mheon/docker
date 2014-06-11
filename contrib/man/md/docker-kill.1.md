@@ -5,7 +5,7 @@
 docker-kill - Kill a running container (send SIGKILL, or specified signal)
 
 # SYNOPSIS
-**docker kill** **--signal**[=*"KILL"*] CONTAINER [CONTAINER...]
+**docker kill** [**--help] **--signal**[=*"KILL"*] CONTAINER [CONTAINER...]
 
 # DESCRIPTION
 
@@ -13,6 +13,9 @@ The main process inside each container specified will be sent SIGKILL,
  or any signal specified with option --signal.
 
 # OPTIONS
+
+**--help  Print Usage statement
+
 **-s**, **--signal**=*"KILL"*
    Signal to send to the container
 

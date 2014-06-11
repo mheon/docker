@@ -5,7 +5,7 @@
 docker-search - Search the docker index for images
 
 # SYNOPSIS
-**docker search** **--no-trunc**[=*false*] **--automated**[=*false*]
+**docker search** [**--help**] **--no-trunc**[=*false*] **--automated**[=*false*]
  **-s**|**--stars**[=*0*] TERM
 
 # DESCRIPTION
@@ -16,6 +16,9 @@ number of stars awarded, whether the image is official, and whether it
 is automated.
 
 # OPTIONS
+
+**--help  Print Usage statement
+
 **--no-trunc**=*true*|*false*
    When true display the complete description. The default is false.
 

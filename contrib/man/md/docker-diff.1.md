@@ -5,12 +5,16 @@
 docker-diff - Inspect changes on a container's filesystem
 
 # SYNOPSIS
-**docker diff** CONTAINER
+**docker diff** [**--help] CONTAINER
 
 # DESCRIPTION
 Inspect changes on a container's filesystem. You can use the full or
 shortened container ID or the container name set using
 **docker run --name** option.
+
+# OPTIONS
+
+**--help  Print Usage statement
 
 # EXAMPLE
 Inspect the changes to on a nginx container:
