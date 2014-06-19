@@ -25,7 +25,14 @@ import (
 
 // Init is the init process that first runs inside a new namespace to setup mounts, users, networking,
 // and other options required for the new container.
-func Init(container *libcontainer.Container, uncleanRootfs, consolePath string, syncPipe *SyncPipe, args []string) error {
+func Init(container *libcontainer.Container, uncleanRootfs, consolePath string, syncPipe *SyncPipe, args []string) (err error) {
+
+	defer func() {
+		if err != nil {
+			syncPipe.ReportError(err)
+		}
+	}()
+
 	rootfs, err := utils.ResolveRootfs(uncleanRootfs)
 	if err != nil {
 		return err
@@ -40,10 +47,8 @@ func Init(container *libcontainer.Container, uncleanRootfs, consolePath string, 
 	// We always read this as it is a way to sync with the parent as well
 	context, err := syncPipe.ReadFromParent()
 	if err != nil {
-		syncPipe.Close()
 		return err
 	}
-	syncPipe.Close()
 
 	if consolePath != "" {
 		if err := console.OpenAndDup(consolePath); err != nil {
@@ -94,6 +99,9 @@ func Init(container *libcontainer.Container, uncleanRootfs, consolePath string, 
 	if err != nil {
 		return fmt.Errorf("get parent death signal %s", err)
 	}
+
+	// Report to parent that we're done. By this point all network and volumes are set up.
+	syncPipe.Close()
 
 	if err := FinalizeNamespace(container); err != nil {
 		return fmt.Errorf("finalize namespace %s", err)
