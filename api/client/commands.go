@@ -59,6 +59,7 @@ func (cli *DockerCli) CmdHelp(args ...string) error {
 		{"cp", "Copy files/folders from a container's filesystem to the host path"},
 		{"diff", "Inspect changes on a container's filesystem"},
 		{"events", "Get real time events from the server"},
+		{"exec", "Execute a command in a running container"},
 		{"export", "Stream the contents of a container as a tar archive"},
 		{"history", "Show the history of an image"},
 		{"images", "List images"},
@@ -1937,6 +1938,42 @@ func (cli *DockerCli) pullImage(image string) error {
 	if err = cli.stream("POST", "/images/create?"+v.Encode(), nil, cli.err, map[string][]string{"X-Registry-Auth": registryAuthHeader}); err != nil {
 		return err
 	}
+	
+	return nil
+}
+
+func (cli *DockerCli) CmdExec(args ...string) error {
+	cmd := cli.Subcmd("exec", "[OPTIONS] CONTAINER COMMAND", "Execute a command in a running container")
+	tty := cmd.Bool([]string{"t", "-tty"}, false, "Allocate a pseudo-tty")	
+
+	if err := cmd.Parse(args); err != nil {
+		return nil
+	}
+	if cmd.NArg() <= 1 {
+		cmd.Usage()
+		return nil
+	} 
+
+	parsedArgs := cmd.Args()
+
+	name := parsedArgs[0]
+	execCmd := parsedArgs[1:]
+
+	execConfig := struct { Cmd []string } { execCmd }
+
+	v := url.Values{}
+
+	if *tty {
+		v.Set("tty", "1")
+	}
+
+	// TODO STDIN/STDOUT hijacking
+
+	// Should actually care about what we read - TODO
+	if _, _, err := cli.call("POST", "/containers/" + name + "/exec?" + v.Encode(), execConfig, false); err != nil {
+		return err
+	}
+
 	return nil
 }
 

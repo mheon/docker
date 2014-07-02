@@ -792,6 +792,39 @@ func postContainersResize(eng *engine.Engine, version version.Version, w http.Re
 	return nil
 }
 
+func postContainersExec(eng *engine.Engine, version version.Version, w http.ResponseWriter, r *http.Request, vars map[string]string) error {
+	if err := parseForm(r); err != nil {
+		return err
+	}
+
+	if vars == nil {
+		return fmt.Errorf("Missing parameter")
+	}
+
+	job := eng.Job("container_exec", vars["name"])
+
+	var command engine.Env
+
+	if err := command.Decode(r.Body); err != nil {
+		return err
+	}
+
+	if command.GetList("Cmd") == nil {
+		return fmt.Errorf("Must provide command")
+	}
+
+	job.SetenvList("cmd", command.GetList("Cmd"))
+
+	if err := job.Run(); err != nil {
+		return err
+	}
+
+	// TODO STDIN/STDOUT hijacking
+
+	w.WriteHeader(http.StatusOK)
+	return nil
+}
+
 func postContainersAttach(eng *engine.Engine, version version.Version, w http.ResponseWriter, r *http.Request, vars map[string]string) error {
 	if err := parseForm(r); err != nil {
 		return err
@@ -1139,6 +1172,7 @@ func createRouter(eng *engine.Engine, logging, enableCors bool, dockerVersion st
 			"/containers/{name:.*}/resize":  postContainersResize,
 			"/containers/{name:.*}/attach":  postContainersAttach,
 			"/containers/{name:.*}/copy":    postContainersCopy,
+			"/containers/{name:.*}/exec":    postContainersExec,
 		},
 		"DELETE": {
 			"/containers/{name:.*}": deleteContainers,

@@ -476,6 +476,20 @@ func (container *Container) releaseNetwork() {
 	container.NetworkSettings = &NetworkSettings{}
 }
 
+func (container *Container) Exec(command []string) error {
+	if !container.State.IsRunning() {
+		return fmt.Errorf("Container %s is not running", container.ID)
+	}
+
+	if container.State.IsPaused() {
+		return fmt.Errorf("Container %s is paused", container.ID)
+	}
+
+	// TODO IMPLEMENT IN EXECDRIVER
+
+	return nil
+}
+
 func (container *Container) monitor(callback execdriver.StartCallback) error {
 	var (
 		err      error

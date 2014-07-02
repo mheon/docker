@@ -121,6 +121,7 @@ func InitServer(job *engine.Job) engine.Status {
 	job.Eng.Hack_SetGlobalVar("httpapi.daemon", srv.daemon)
 
 	for name, handler := range map[string]engine.Handler{
+		"container_exec":	srv.ContainerExec,
 		"export":           srv.ContainerExport,
 		"create":           srv.ContainerCreate,
 		"stop":             srv.ContainerStop,
@@ -168,6 +169,25 @@ func InitServer(job *engine.Job) engine.Status {
 		return job.Error(err)
 	}
 	srv.SetRunning(true)
+	return engine.StatusOK
+}
+
+func (srv *Server) ContainerExec(job *engine.Job) engine.Status {
+	if len(job.Args) < 1 {
+		return job.Errorf("Usage: %s CONTAINER COMMAND", job.Name)
+	}
+	name := job.Args[0]
+	container := srv.daemon.Get(name)
+	if container == nil {
+		return job.Errorf("No such container: %s", name)
+	}
+
+	cmd := job.GetenvList("cmd")
+
+	if err := container.Exec(cmd); err != nil {
+		return job.Errorf("Cannot exec in container %s: %s", name, err)
+	}
+
 	return engine.StatusOK
 }
 
