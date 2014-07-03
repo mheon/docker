@@ -195,6 +195,10 @@ func (d *driver) Run(c *execdriver.Command, pipes *execdriver.Pipes, startCallba
 	return getExitCode(c), waitErr
 }
 
+func (d *driver) Exec(id string, rootPid int, c []string) (int, error) {
+	return -1, fmt.Errorf("UNIMPLEMENTED ON LXC AS YET")
+}
+
 /// Return the exit code of the process
 // if the process has not exited -1 will be returned
 func getExitCode(c *execdriver.Command) int {

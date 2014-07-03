@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -139,6 +140,32 @@ func (d *driver) Run(c *execdriver.Command, pipes *execdriver.Pipes, startCallba
 			startCallback(c)
 		}
 	})
+}
+
+func (d *driver) Exec(id string, rootPid int, c []string) (int, error) {
+	// Get the container
+	d.Lock()
+	active := d.activeContainers[id]
+	d.Unlock()	
+
+	if active == nil {
+		return -1, fmt.Errorf("active container for %s does not exist", id)
+	}
+
+	var nsEnterCmd []string = []string { "nsenter", "-m", "-p", "-u", "-i", "-n", "-t", strconv.Itoa(rootPid), "--" }
+	nsEnterCmd = append(nsEnterCmd, c...)
+
+	// Given how Libcontainer is looking,
+	// Let's just implement with nsenter for the moment, eh?
+	var command exec.Cmd
+	command.Path = "/bin/nsenter"
+	command.Args = nsEnterCmd
+
+	if err := command.Run(); err != nil {
+		return -1, err
+	}
+
+	return int(command.ProcessState.Sys().(syscall.WaitStatus)), nil
 }
 
 func (d *driver) Kill(p *execdriver.Command, sig int) error {

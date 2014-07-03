@@ -82,7 +82,7 @@ type TtyTerminal interface {
 
 type Driver interface {
 	Run(c *Command, pipes *Pipes, startCallback StartCallback) (int, error) // Run executes the process and blocks until the process exits and returns the exit code
-	Exec(id string, c []string)
+	Exec(id string, rootPid int, c []string) (int, error)
 	Kill(c *Command, sig int) error
 	Pause(c *Command) error
 	Unpause(c *Command) error

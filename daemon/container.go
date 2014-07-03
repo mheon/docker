@@ -485,7 +485,9 @@ func (container *Container) Exec(command []string) error {
 		return fmt.Errorf("Container %s is paused", container.ID)
 	}
 
-	// TODO IMPLEMENT IN EXECDRIVER
+	if _, err := container.daemon.execDriver.Exec(container.ID, container.State.Pid, command); err != nil {
+		return err
+	}
 
 	return nil
 }
