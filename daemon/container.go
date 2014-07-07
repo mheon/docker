@@ -476,7 +476,7 @@ func (container *Container) releaseNetwork() {
 	container.NetworkSettings = &NetworkSettings{}
 }
 
-func (container *Container) Exec(command []string) error {
+func (container *Container) Exec(command []string, pipes *execdriver.Pipes) error {
 	if !container.State.IsRunning() {
 		return fmt.Errorf("Container %s is not running", container.ID)
 	}
@@ -485,7 +485,7 @@ func (container *Container) Exec(command []string) error {
 		return fmt.Errorf("Container %s is paused", container.ID)
 	}
 
-	if _, err := container.daemon.execDriver.Exec(container.ID, container.State.Pid, command); err != nil {
+	if _, err := container.daemon.execDriver.Exec(container.ID, container.State.Pid, command, pipes); err != nil {
 		return err
 	}
 

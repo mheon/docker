@@ -47,6 +47,7 @@ import (
 
 	"github.com/dotcloud/docker/archive"
 	"github.com/dotcloud/docker/daemon"
+	"github.com/dotcloud/docker/daemon/execdriver"	
 	"github.com/dotcloud/docker/daemonconfig"
 	"github.com/dotcloud/docker/dockerversion"
 	"github.com/dotcloud/docker/engine"
@@ -183,9 +184,10 @@ func (srv *Server) ContainerExec(job *engine.Job) engine.Status {
 	}
 
 	cmd := job.GetenvList("cmd")
+	pipes := execdriver.NewPipes(job.Stdin, job.Stdout, job.Stderr, true)
 
-	if err := container.Exec(cmd); err != nil {
-		return job.Errorf("Cannot exec in container %s: %s", name, err)
+	if err := container.Exec(cmd, pipes); err != nil {
+		return job.Errorf("Error executing in container %s: %s", name, err)
 	}
 
 	return engine.StatusOK

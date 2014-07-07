@@ -142,7 +142,7 @@ func (d *driver) Run(c *execdriver.Command, pipes *execdriver.Pipes, startCallba
 	})
 }
 
-func (d *driver) Exec(id string, rootPid int, c []string) (int, error) {
+func (d *driver) Exec(id string, rootPid int, c []string, pipes *execdriver.Pipes) (int, error) {
 	// Get the container
 	d.Lock()
 	active := d.activeContainers[id]
@@ -160,6 +160,11 @@ func (d *driver) Exec(id string, rootPid int, c []string) (int, error) {
 	var command exec.Cmd
 	command.Path = "/bin/nsenter"
 	command.Args = nsEnterCmd
+	if pipes != nil {
+		command.Stdin = pipes.Stdin
+		command.Stdout = pipes.Stdout
+		command.Stderr = pipes.Stderr		
+	}
 
 	if err := command.Run(); err != nil {
 		return -1, err

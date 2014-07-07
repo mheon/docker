@@ -793,6 +793,8 @@ func postContainersResize(eng *engine.Engine, version version.Version, w http.Re
 }
 
 func postContainersExec(eng *engine.Engine, version version.Version, w http.ResponseWriter, r *http.Request, vars map[string]string) error {
+	utils.Debugf("In postContainersExec")
+
 	if err := parseForm(r); err != nil {
 		return err
 	}
@@ -803,11 +805,15 @@ func postContainersExec(eng *engine.Engine, version version.Version, w http.Resp
 
 	job := eng.Job("container_exec", vars["name"])
 
+	utils.Debugf("After job")
+
 	var command engine.Env
 
 	if err := command.Decode(r.Body); err != nil {
 		return err
 	}
+
+	utils.Debugf("After decode")
 
 	if command.GetList("Cmd") == nil {
 		return fmt.Errorf("Must provide command")
@@ -815,13 +821,59 @@ func postContainersExec(eng *engine.Engine, version version.Version, w http.Resp
 
 	job.SetenvList("cmd", command.GetList("Cmd"))
 
+	utils.Debugf("Before writeHeader")
+
+	//w.WriteHeader(http.StatusOK)
+
+	if r.Form.Get("tty") == "1" {
+		inStream, outStream, err := hijackServer(w)
+		if err != nil {
+			utils.Debugf("Error hijacking server: %s", err)
+			return err
+		}
+		defer func() {
+			if tcpc, ok := inStream.(*net.TCPConn); ok {
+				tcpc.CloseWrite()
+			} else {
+				inStream.Close()
+			}
+		}()
+		defer func() {
+			if tcpc, ok := outStream.(*net.TCPConn); ok {
+				tcpc.CloseWrite()
+			} else if closer, ok := outStream.(io.Closer); ok {
+				closer.Close()
+			}
+		}()
+
+		utils.Debugf("Past hijackServer")
+
+		var errStream io.Writer
+
+		fmt.Fprintf(outStream, "HTTP/1.1 200 OK\r\nContent-Type: application/vnd.docker.raw-stream\r\n\r\n")
+
+		utils.Debugf("Past fprintf")
+
+		if version.GreaterThanOrEqualTo("1.6") {
+			errStream = utils.NewStdWriter(outStream, utils.Stderr)
+			outStream = utils.NewStdWriter(outStream, utils.Stdout)
+		} else {
+			errStream = outStream
+		}
+
+		job.Stdout.Add(outStream)
+		job.Stderr.Add(errStream)
+		job.Stdin.Add(inStream)		
+	}
+
+	utils.Debugf("Past hijack")
+
 	if err := job.Run(); err != nil {
 		return err
 	}
 
-	// TODO STDIN/STDOUT hijacking
+	utils.Debugf("Past job.Run")
 
-	w.WriteHeader(http.StatusOK)
 	return nil
 }
 

@@ -1967,11 +1967,27 @@ func (cli *DockerCli) CmdExec(args ...string) error {
 		v.Set("tty", "1")
 	}
 
-	// TODO STDIN/STDOUT hijacking
+	// TODO Proxy Signals?
+	// TODO Should be able to accept names and IDs not just IDs
 
-	// Should actually care about what we read - TODO
-	if _, _, err := cli.call("POST", "/containers/" + name + "/exec?" + v.Encode(), execConfig, false); err != nil {
-		return err
+	if *tty {
+		// We need to instanciate the chan because the select needs it. It can
+		// be closed but can't be uninitialized.
+		hijacked := make(chan io.Closer)
+
+		// Block the return until the chan gets closed
+		defer func() {
+			utils.Debugf("End of CmdRun(), Waiting for hijack to finish.")
+			if _, ok := <-hijacked; ok {
+				utils.Errorf("Hijack did not finish (chan still open)")
+			}
+		}()
+
+		return cli.hijack("POST", "/containers/"+name+"/exec?"+v.Encode(), true, cli.in, cli.out, cli.err, hijacked)		
+	} else {
+		if _, _, err := cli.call("POST", "/containers/" + name + "/exec?" + v.Encode(), execConfig, false); err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -195,7 +195,7 @@ func (d *driver) Run(c *execdriver.Command, pipes *execdriver.Pipes, startCallba
 	return getExitCode(c), waitErr
 }
 
-func (d *driver) Exec(id string, rootPid int, c []string) (int, error) {
+func (d *driver) Exec(id string, rootPid int, c []string, pipes *execdriver.Pipes) (int, error) {
 	return -1, fmt.Errorf("UNIMPLEMENTED ON LXC AS YET")
 }
 
