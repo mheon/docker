@@ -151,17 +151,6 @@ func TestGet(t *testing.T) {
 	VisitAll(visitor)
 }
 
-func TestUsage(t *testing.T) {
-	called := false
-	ResetForTesting(func() { called = true })
-	if CommandLine.Parse([]string{"-x"}) == nil {
-		t.Error("parse did not fail for unknown flag")
-	}
-	if !called {
-		t.Error("did not call Usage for unknown flag")
-	}
-}
-
 func testParse(f *FlagSet, t *testing.T) {
 	if f.Parsed() {
 		t.Error("f.Parse() = true before Parse")
@@ -388,9 +377,7 @@ func TestChangingArgs(t *testing.T) {
 
 // Test that -help invokes the usage message and returns ErrHelp.
 func TestHelp(t *testing.T) {
-	var helpCalled = false
 	fs := NewFlagSet("help test", ContinueOnError)
-	fs.Usage = func() { helpCalled = true }
 	var flag bool
 	fs.BoolVar(&flag, []string{"flag"}, false, "regular flag")
 	// Regular flag invocation should work
@@ -401,10 +388,6 @@ func TestHelp(t *testing.T) {
 	if !flag {
 		t.Error("flag was not set by -flag")
 	}
-	if helpCalled {
-		t.Error("help called for regular flag")
-		helpCalled = false // reset for next test
-	}
 	// Help flag should work as expected.
 	err = fs.Parse([]string{"-help"})
 	if err == nil {
@@ -413,18 +396,11 @@ func TestHelp(t *testing.T) {
 	if err != ErrHelp {
 		t.Fatal("expected ErrHelp; got ", err)
 	}
-	if !helpCalled {
-		t.Fatal("help was not called")
-	}
 	// If we define a help flag, that should override.
 	var help bool
 	fs.BoolVar(&help, []string{"help"}, false, "help flag")
-	helpCalled = false
 	err = fs.Parse([]string{"-help"})
 	if err != nil {
 		t.Fatal("expected no error for defined -help; got ", err)
-	}
-	if helpCalled {
-		t.Fatal("help was called; should not have been for defined help flag")
 	}
 }

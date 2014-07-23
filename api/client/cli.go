@@ -47,9 +47,10 @@ func (cli *DockerCli) ParseCommands(args ...string) error {
 }
 
 func (cli *DockerCli) Subcmd(name, signature, description string) *flag.FlagSet {
-	flags := flag.NewFlagSet(name, flag.ContinueOnError)
+	flags := flag.NewFlagSet(name, flag.ExitOnError)
+	flags.SetOutput(cli.out)
 	flags.Usage = func() {
-		fmt.Fprintf(cli.err, "\nUsage: docker %s %s\n\n%s\n\n", name, signature, description)
+		fmt.Fprintf(cli.out, "\nUsage: docker %s %s\n\n%s\n\n", name, signature, description)
 		flags.PrintDefaults()
 		os.Exit(2)
 	}

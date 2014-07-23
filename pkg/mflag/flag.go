@@ -752,12 +752,11 @@ func Var(value Value, names []string, usage string) {
 	CommandLine.Var(value, names, usage)
 }
 
-// failf prints to standard error a formatted error and usage message and
-// returns the error.
+// failf prints to standard error a formatted error and returns the error.
 func (f *FlagSet) failf(format string, a ...interface{}) error {
 	err := fmt.Errorf(format, a...)
-	fmt.Fprintln(f.out(), err)
-	f.usage()
+	fmt.Fprintln(os.Stderr, err)
+	fmt.Fprintln(os.Stderr, "Use '--help' to print usage information")
 	return err
 }
 
