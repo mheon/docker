@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/docker/libcontainer/label"
+	"github.com/docker/libcontainer/security/seccomp"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/docker/api"
@@ -43,6 +44,8 @@ import (
 	"github.com/docker/docker/trust"
 	"github.com/docker/docker/utils"
 	"github.com/docker/docker/volumes"
+
+	libseccomp "github.com/mheon/golang-seccomp"
 
 	"github.com/go-fsnotify/fsnotify"
 )
@@ -597,11 +600,181 @@ func (daemon *Daemon) getEntrypointAndArgs(configEntrypoint, configCmd []string)
 	return entrypoint, args
 }
 
+func defaultBlockedSyscalls() ([]seccomp.BlockedSyscall, error) {
+	restrictedSyscalls := []string{
+		"_sysctl",
+		"acct",
+		"add_key",
+		"adjtimex",
+		"clock_adjtime",
+		"delete_module",
+		"fanotify_init",
+		"finit_module",
+		"get_mempolicy",
+		"get_robust_list",
+		"init_module",
+		"io_cancel",
+		"io_destroy",
+		"io_getevents",
+		"io_setup",
+		"io_submit",
+		"ioperm",
+		"iopl",
+		"kcmp",
+		"kexec_file_load",
+		"kexec_load",
+		"keyctl",
+		"lookup_dcookie",
+		"mbind",
+		"migrate_pages",
+		"modify_ldt",
+		"mount", // ?
+		"move_pages",
+		"open_by_handle_at",
+		"perf_event_open",
+		"personality",
+		"pivot_root",
+		//"ptrace",
+		"quotactl",
+		"remap_file_pages",
+		"request_key",
+		"set_mempolicy",
+		"set_robust_list",
+		"swapoff",
+		"swapon",
+		"sysfs",
+		"syslog", // ? - systemd in container story may require
+		"unshare",
+		"uselib",
+		"vmsplice",
+	}
+
+	blockedCalls := []seccomp.BlockedSyscall{}
+	for _, call := range restrictedSyscalls {
+		blockedCalls = append(blockedCalls, seccomp.MakeBlockedSyscall(call))
+	}
+
+	// Block a bevy of protocols from being used with socket
+
+	// Amateur Radio X.25 (3)
+	ax25Cond, err := libseccomp.MakeCondition(0, libseccomp.CompareEqual, 3)
+	if err != nil {
+		return nil, err
+	}
+
+	// IPX (4)
+	ipxCond, err := libseccomp.MakeCondition(0, libseccomp.CompareEqual, 4)
+	if err != nil {
+		return nil, err
+	}
+
+	// Appletalk (5)
+	appletalkCond, err := libseccomp.MakeCondition(0, libseccomp.CompareEqual, 5)
+	if err != nil {
+		return nil, err
+	}
+
+	// Netrom (6)
+	netromCond, err := libseccomp.MakeCondition(0, libseccomp.CompareEqual, 6)
+	if err != nil {
+		return nil, err
+	}
+
+	// Bridge (7)
+	bridgeCond, err := libseccomp.MakeCondition(0, libseccomp.CompareEqual, 7)
+	if err != nil {
+		return nil, err
+	}
+
+	// ATM VPC (8)
+	atmVpcCond, err := libseccomp.MakeCondition(0, libseccomp.CompareEqual, 8)
+	if err != nil {
+		return nil, err
+	}
+
+	// X.25 (9)
+	x25Cond, err := libseccomp.MakeCondition(0, libseccomp.CompareEqual, 9)
+	if err != nil {
+		return nil, err
+	}
+
+	// Amateur Radio X.25 PLP (11)
+	roseCond, err := libseccomp.MakeCondition(0, libseccomp.CompareEqual, 11)
+	if err != nil {
+		return nil, err
+	}
+
+	// DECNet (12)
+	decNetCond, err := libseccomp.MakeCondition(0, libseccomp.CompareEqual, 12)
+	if err != nil {
+		return nil, err
+	}
+
+	// NetBEUI (13)
+	netBeuiCond, err := libseccomp.MakeCondition(0, libseccomp.CompareEqual, 13)
+	if err != nil {
+		return nil, err
+	}
+
+	// Security (14)
+	securityCond, err := libseccomp.MakeCondition(0, libseccomp.CompareEqual, 14)
+	if err != nil {
+		return nil, err
+	}
+
+	// PF_KEY key management API (15)
+	keyCond, err := libseccomp.MakeCondition(0, libseccomp.CompareEqual, 15)
+	if err != nil {
+		return nil, err
+	}
+
+	// All socket calls greater than AF_NETLINK (16)
+	overNetlinkCond, err := libseccomp.MakeCondition(0, libseccomp.CompareGreater, 16)
+	if err != nil {
+		return nil, err
+	}
+
+	allConds := []libseccomp.ScmpCondition{
+		ax25Cond,
+		ipxCond,
+		appletalkCond,
+		netromCond,
+		bridgeCond,
+		atmVpcCond,
+		x25Cond,
+		roseCond,
+		decNetCond,
+		netBeuiCond,
+		securityCond,
+		keyCond,
+		overNetlinkCond,
+	}
+	blockedCalls = append(blockedCalls, seccomp.MakeConditionallyBlockedSyscall("socket", allConds))
+
+	// TODO settimeofday where a0=CLOCK_REALTIME
+
+	return blockedCalls, nil
+}
+
 func parseSecurityOpt(container *Container, config *runconfig.HostConfig) error {
 	var (
 		labelOpts []string
 		err       error
 	)
+
+	if config.Privileged {
+		container.EnableSeccomp = false
+	}
+
+	// Set up default Seccomp blocklist
+	if container.EnableSeccomp {
+		blockedCalls, err := defaultBlockedSyscalls()
+		if err != nil {
+			return err
+		}
+
+		container.RestrictSyscalls = blockedCalls
+	}
 
 	for _, opt := range config.SecurityOpt {
 		con := strings.SplitN(opt, ":", 2)
@@ -613,12 +786,57 @@ func parseSecurityOpt(container *Container, config *runconfig.HostConfig) error 
 			labelOpts = append(labelOpts, con[1])
 		case "apparmor":
 			container.AppArmorProfile = con[1]
+		case "seccomp":
+			con1 := strings.SplitN(con[1], ":", 2)
+			switch con1[0] {
+			case "add_arch":
+				container.AdditionalArches = append(container.AdditionalArches, con1[1])
+			case "deny":
+				if len(con1) < 2 {
+					return fmt.Errorf("Must provide syscall(s) to deny!")
+				}
+				calls := strings.Split(con1[1], ",")
+				if len(calls) == 0 {
+					return fmt.Errorf("Must provide at least one syscall to deny!")
+				}
+				for _, call := range calls {
+					container.RestrictSyscalls = append(container.RestrictSyscalls, seccomp.MakeBlockedSyscall(call))
+				}
+			case "allow":
+				if len(con1) < 2 {
+					return fmt.Errorf("Must provide syscall(s) to deny!")
+				}
+				calls := strings.Split(con1[1], ",")
+				if len(calls) == 0 {
+					return fmt.Errorf("Must provide at least one syscall to allow!")
+				}
+				for _, call := range calls {
+					newlist := []seccomp.BlockedSyscall{}
+					for _, r := range container.RestrictSyscalls {
+						if r.Syscall != call {
+							newlist = append(newlist, r)
+						}
+					}
+					container.RestrictSyscalls = newlist
+				}
+			case "disable":
+				container.EnableSeccomp = false
+			default:
+				return fmt.Errorf("Invalid --security-opt: %q", opt)
+			}
 		default:
 			return fmt.Errorf("Invalid --security-opt: %q", opt)
 		}
 	}
 
+	if !container.EnableSeccomp {
+		container.RestrictSyscalls = nil
+	}
+
 	container.ProcessLabel, container.MountLabel, err = label.InitLabels(labelOpts)
+
+	log.Errorf("(%+v)", container.RestrictSyscalls)
+
 	return err
 }
 
@@ -650,6 +868,7 @@ func (daemon *Daemon) newContainer(name string, config *runconfig.Config, imgID 
 		ExecDriver:      daemon.execDriver.Name(),
 		State:           NewState(),
 		execCommands:    newExecStore(),
+		EnableSeccomp:   daemon.config.EnableSyscallFiltering,
 	}
 	container.root = daemon.containerRoot(container.ID)
 	return container, err

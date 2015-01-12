@@ -281,6 +281,9 @@ its root filesystem mounted as read only prohibiting any writes.
     "label:type:TYPE"   : Set the label type for the container
     "label:level:LEVEL" : Set the label level for the container
     "label:disable"     : Turn off label confinement for the container
+    "seccomp:disable"   : Turn off seccomp syscall filtering for the container
+    "seccomp:add:swapoff"   : Turn on swapoff syscall for the container
+
 
 **--sig-proxy**=*true*|*false*
    Proxy received signals to the process (non-TTY mode only). SIGCHLD, SIGSTOP, and SIGKILL are not proxied. The default is *true*.
@@ -529,6 +532,11 @@ To disable the security labeling for this container versus running with the
 `--permissive` flag, use the following command:
 
     # docker run --security-opt label:disable -i -t fedora bash
+
+To disable the seccomp syscall filtering for this container versus running with the
+`--permissive` flag, use the following command:
+
+    # docker run --security-opt seccomp:disable -i -t fedora bash
 
 If you want a tighter security policy on the processes within a container,
 you can specify an alternate type for the container. You could run a container

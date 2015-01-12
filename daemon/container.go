@@ -32,6 +32,7 @@ import (
 	"github.com/docker/docker/pkg/symlink"
 	"github.com/docker/docker/runconfig"
 	"github.com/docker/docker/utils"
+	"github.com/docker/libcontainer/security/seccomp"
 )
 
 const DefaultPathEnv = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
@@ -80,6 +81,9 @@ type Container struct {
 	daemon                   *Daemon
 	MountLabel, ProcessLabel string
 	AppArmorProfile          string
+	RestrictSyscalls         []seccomp.BlockedSyscall
+	AdditionalArches         []string
+	EnableSeccomp            bool
 	RestartCount             int
 	UpdateDns                bool
 
@@ -311,6 +315,7 @@ func populateCommand(c *Container, env []string) error {
 		MountLabel:         c.GetMountLabel(),
 		LxcConfig:          lxcConfig,
 		AppArmorProfile:    c.AppArmorProfile,
+		RestrictSyscalls:   c.RestrictSyscalls,
 	}
 
 	return nil

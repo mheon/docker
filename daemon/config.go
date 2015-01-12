@@ -42,6 +42,7 @@ type Config struct {
 	Context                     map[string][]string
 	TrustKeyPath                string
 	Labels                      []string
+	EnableSyscallFiltering      bool
 }
 
 // InstallFlags adds command-line options to the top-level flag parser for
@@ -71,6 +72,7 @@ func (config *Config) InstallFlags() {
 	opts.IPListVar(&config.Dns, []string{"#dns", "-dns"}, "Force Docker to use specific DNS servers")
 	opts.DnsSearchListVar(&config.DnsSearch, []string{"-dns-search"}, "Force Docker to use specific DNS search domains")
 	opts.LabelListVar(&config.Labels, []string{"-label"}, "Set key=value labels to the daemon (displayed in `docker info`)")
+	flag.BoolVar(&config.EnableSyscallFiltering, []string{"-seccomp-enabled"}, false, "Enable Seccomp system call filtering")
 }
 
 func getDefaultNetworkMtu() int {
