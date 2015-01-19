@@ -80,6 +80,7 @@ type Container struct {
 	daemon                   *Daemon
 	MountLabel, ProcessLabel string
 	AppArmorProfile          string
+	ContainerUsers           *execdriver.Users
 	RestartCount             int
 	UpdateDns                bool
 
@@ -300,6 +301,7 @@ func populateCommand(c *Container, env []string) error {
 		Network:            en,
 		Ipc:                ipc,
 		Pid:                pid,
+		UserMappings:       c.ContainerUsers,
 		Resources:          resources,
 		AllowedDevices:     allowedDevices,
 		AutoCreatedDevices: autoCreatedDevices,

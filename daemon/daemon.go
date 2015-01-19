@@ -6,13 +6,16 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"os/user"
 	"path"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/docker/libcontainer"
 	"github.com/docker/libcontainer/label"
 
 	log "github.com/Sirupsen/logrus"
@@ -621,6 +624,69 @@ func parseSecurityOpt(container *Container, config *runconfig.HostConfig) error 
 	return err
 }
 
+func (daemon *Daemon) setupUserMappings() (*execdriver.Users, error) {
+	users := new(execdriver.Users)
+
+	if !daemon.config.EnableUserNamespace {
+		users.HostUsers = true
+		return users, nil
+	}
+
+	dockerUser, err := user.Lookup("docker")
+	if err != nil {
+		return nil, err
+	}
+
+	dockerUid, err := strconv.Atoi(dockerUser.Uid)
+	if err != nil {
+		return nil, err
+	}
+
+	dockerGid, err := strconv.Atoi(dockerUser.Gid)
+	if err != nil {
+		return nil, err
+	}
+
+	users.HostUsers = false
+	users.UidMappings = []libcontainer.IDMap {
+		{
+			ContainerID: 0,
+			HostID:      dockerUid,
+			Size:        1,
+		},
+		{
+			ContainerID: 1,
+			HostID:      1,
+			Size:        (dockerUid - 2),
+		},
+		{
+			ContainerID: (dockerUid + 1),
+			HostID:      (dockerUid + 1),
+			Size:        (65534 - dockerUid),
+		},
+	}
+
+	users.GidMappings = []libcontainer.IDMap {
+		{
+			ContainerID: 0,
+			HostID:      dockerGid,
+			Size:        1,
+		},
+		{
+			ContainerID: 1,
+			HostID:      1,
+			Size:        (dockerGid - 2),
+			},
+		{
+			ContainerID: (dockerGid + 1),
+			HostID:      (dockerGid + 1),
+			Size:        (65534 - dockerGid),
+		},
+	}
+
+	return users, nil
+}
+
 func (daemon *Daemon) newContainer(name string, config *runconfig.Config, imgID string) (*Container, error) {
 	var (
 		id  string
@@ -651,6 +717,7 @@ func (daemon *Daemon) newContainer(name string, config *runconfig.Config, imgID 
 		execCommands:    newExecStore(),
 	}
 	container.root = daemon.containerRoot(container.ID)
+	container.ContainerUsers, err = daemon.setupUserMappings()
 	return container, err
 }
 

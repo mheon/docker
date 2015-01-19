@@ -130,7 +130,7 @@ func (d *driver) Run(c *execdriver.Command, pipes *execdriver.Pipes, startCallba
 			c.ProcessConfig.Dir = container.RootFs
 
 			return &c.ProcessConfig.Cmd
-		}, func() {
+		}, namespaces.DefaultSetupCommand, func() {
 			close(waitForStart)
 			if startCallback != nil {
 				c.ContainerPid = c.ProcessConfig.Process.Pid

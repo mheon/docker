@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/docker/libcontainer"
 	"github.com/docker/libcontainer/devices"
 )
 
@@ -82,6 +83,13 @@ type Pid struct {
 	HostPid bool `json:"host_pid"`
 }
 
+// User mappings from host to container
+type Users struct {
+	HostUsers   bool                 `json:"host_users"`
+	UidMappings []libcontainer.IDMap `json:"uid_mappings"`
+	GidMappings []libcontainer.IDMap `json:"gid_mappings"`
+}
+
 type NetworkInterface struct {
 	Gateway              string `json:"gateway"`
 	IPAddress            string `json:"ip"`
@@ -133,6 +141,7 @@ type Command struct {
 	Network            *Network          `json:"network"`
 	Ipc                *Ipc              `json:"ipc"`
 	Pid                *Pid              `json:"pid"`
+	UserMappings       *Users            `json:"user_mappings"`
 	Resources          *Resources        `json:"resources"`
 	Mounts             []Mount           `json:"mounts"`
 	AllowedDevices     []*devices.Device `json:"allowed_devices"`

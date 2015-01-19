@@ -42,6 +42,7 @@ type Config struct {
 	Context                     map[string][]string
 	TrustKeyPath                string
 	Labels                      []string
+	EnableUserNamespace         bool
 }
 
 // InstallFlags adds command-line options to the top-level flag parser for
@@ -65,6 +66,7 @@ func (config *Config) InstallFlags() {
 	flag.StringVar(&config.ExecDriver, []string{"e", "-exec-driver"}, "native", "Force the Docker runtime to use a specific exec driver")
 	flag.BoolVar(&config.EnableSelinuxSupport, []string{"-selinux-enabled"}, false, "Enable selinux support. SELinux does not presently support the BTRFS storage driver")
 	flag.IntVar(&config.Mtu, []string{"#mtu", "-mtu"}, 0, "Set the containers network MTU\nif no value is provided: default to the default route MTU or 1500 if no default route is available")
+	flag.BoolVar(&config.EnableUserNamespace, []string{"-userns-enabled"}, false, "Enable user namespaces, running container root as an unprivileged user")
 	opts.IPVar(&config.DefaultIp, []string{"#ip", "-ip"}, "0.0.0.0", "Default IP address to use when binding container ports")
 	opts.ListVar(&config.GraphOptions, []string{"-storage-opt"}, "Set storage driver options")
 	// FIXME: why the inconsistency between "hosts" and "sockets"?

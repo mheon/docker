@@ -49,6 +49,10 @@ func (d *driver) createContainer(c *execdriver.Command) (*libcontainer.Config, e
 		return nil, err
 	}
 
+	if err := d.createUser(container, c); err != nil {
+		return nil, err
+	}
+
 	if c.ProcessConfig.Privileged {
 		if err := d.setPrivileged(container); err != nil {
 			return nil, err
@@ -161,6 +165,18 @@ func (d *driver) createPid(container *libcontainer.Config, c *execdriver.Command
 		container.Namespaces.Remove(libcontainer.NEWPID)
 		return nil
 	}
+
+	return nil
+}
+
+func (d *driver) createUser(container *libcontainer.Config, c *execdriver.Command) error {
+	if c.UserMappings.HostUsers {
+		container.Namespaces.Remove(libcontainer.NEWUSER)
+		return nil
+	}
+
+	container.UidMappings = c.UserMappings.UidMappings
+	container.GidMappings = c.UserMappings.GidMappings
 
 	return nil
 }
