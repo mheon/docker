@@ -6,17 +6,16 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"os/user"
 	"path"
 	"regexp"
 	"runtime"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/docker/libcontainer"
 	"github.com/docker/libcontainer/label"
+	"github.com/docker/libcontainer/user"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/docker/api"
@@ -632,17 +631,7 @@ func (daemon *Daemon) setupUserMappings() (*execdriver.Users, error) {
 		return users, nil
 	}
 
-	dockerUser, err := user.Lookup("docker")
-	if err != nil {
-		return nil, err
-	}
-
-	dockerUid, err := strconv.Atoi(dockerUser.Uid)
-	if err != nil {
-		return nil, err
-	}
-
-	dockerGid, err := strconv.Atoi(dockerUser.Gid)
+	dockerUser, err := user.LookupUser("docker")
 	if err != nil {
 		return nil, err
 	}
@@ -651,36 +640,36 @@ func (daemon *Daemon) setupUserMappings() (*execdriver.Users, error) {
 	users.UidMappings = []libcontainer.IDMap {
 		{
 			ContainerID: 0,
-			HostID:      dockerUid,
+			HostID:      dockerUser.Uid,
 			Size:        1,
 		},
 		{
 			ContainerID: 1,
 			HostID:      1,
-			Size:        (dockerUid - 2),
+			Size:        (dockerUser.Uid - 2),
 		},
 		{
-			ContainerID: (dockerUid + 1),
-			HostID:      (dockerUid + 1),
-			Size:        (65534 - dockerUid),
+			ContainerID: (dockerUser.Uid + 1),
+			HostID:      (dockerUser.Uid + 1),
+			Size:        (65534 - dockerUser.Uid),
 		},
 	}
 
 	users.GidMappings = []libcontainer.IDMap {
 		{
 			ContainerID: 0,
-			HostID:      dockerGid,
+			HostID:      dockerUser.Gid,
 			Size:        1,
 		},
 		{
 			ContainerID: 1,
 			HostID:      1,
-			Size:        (dockerGid - 2),
+			Size:        (dockerUser.Gid - 2),
 			},
 		{
-			ContainerID: (dockerGid + 1),
-			HostID:      (dockerGid + 1),
-			Size:        (65534 - dockerGid),
+			ContainerID: (dockerUser.Gid + 1),
+			HostID:      (dockerUser.Gid + 1),
+			Size:        (65534 - dockerUser.Gid),
 		},
 	}
 
