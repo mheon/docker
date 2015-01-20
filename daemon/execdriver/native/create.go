@@ -172,6 +172,8 @@ func (d *driver) createPid(container *libcontainer.Config, c *execdriver.Command
 func (d *driver) createUser(container *libcontainer.Config, c *execdriver.Command) error {
 	if c.UserMappings.HostUsers {
 		container.Namespaces.Remove(libcontainer.NEWUSER)
+		container.UidMappings = nil
+		container.GidMappings = nil
 		return nil
 	}
 
@@ -192,6 +194,10 @@ func (d *driver) setPrivileged(container *libcontainer.Config) (err error) {
 	container.MountConfig.DeviceNodes = hostDeviceNodes
 
 	container.RestrictSys = false
+
+	container.Namespaces.Remove(libcontainer.NEWUSER)
+	container.UidMappings = nil
+	container.GidMappings = nil
 
 	if apparmor.IsEnabled() {
 		container.AppArmorProfile = "unconfined"

@@ -111,6 +111,9 @@ func (daemon *Daemon) Create(config *runconfig.Config, hostConfig *runconfig.Hos
 			return nil, nil, err
 		}
 	}
+	if err := daemon.setupUserMappings(container, hostConfig); err != nil {
+		return nil, nil, err
+	}
 	if err := container.Mount(); err != nil {
 		return nil, nil, err
 	}

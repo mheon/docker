@@ -15,7 +15,7 @@ import (
 
 	"github.com/docker/libcontainer"
 	"github.com/docker/libcontainer/label"
-	"github.com/docker/libcontainer/user"
+//	"github.com/docker/libcontainer/user"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/docker/api"
@@ -623,20 +623,40 @@ func parseSecurityOpt(container *Container, config *runconfig.HostConfig) error 
 	return err
 }
 
-func (daemon *Daemon) setupUserMappings() (*execdriver.Users, error) {
+func (daemon *Daemon) setupUserMappings(container *Container, hostConfig *runconfig.HostConfig) (error) {
 	users := new(execdriver.Users)
 
-	if !daemon.config.EnableUserNamespace {
+	if !daemon.config.EnableUserNamespace || (hostConfig != nil && hostConfig.UserNsDisable) {
 		users.HostUsers = true
-		return users, nil
+		container.ContainerUsers = users
+		return nil
 	}
-
+/*
 	dockerUser, err := user.LookupUser("docker")
 	if err != nil {
-		return nil, err
+		return err
 	}
+*/
 
 	users.HostUsers = false
+
+	users.UidMappings = []libcontainer.IDMap {
+		{
+			ContainerID: 0,
+			HostID: 0,
+			Size: 65536,
+		},
+	}
+
+	users.GidMappings = []libcontainer.IDMap {
+		{
+			ContainerID: 0,
+			HostID: 0,
+			Size: 65536,
+		},		
+	}
+
+	/*
 	users.UidMappings = []libcontainer.IDMap {
 		{
 			ContainerID: 0,
@@ -672,8 +692,10 @@ func (daemon *Daemon) setupUserMappings() (*execdriver.Users, error) {
 			Size:        (65534 - dockerUser.Gid),
 		},
 	}
+	*/
 
-	return users, nil
+	container.ContainerUsers = users
+	return nil
 }
 
 func (daemon *Daemon) newContainer(name string, config *runconfig.Config, imgID string) (*Container, error) {
@@ -706,7 +728,6 @@ func (daemon *Daemon) newContainer(name string, config *runconfig.Config, imgID 
 		execCommands:    newExecStore(),
 	}
 	container.root = daemon.containerRoot(container.ID)
-	container.ContainerUsers, err = daemon.setupUserMappings()
 	return container, err
 }
 
