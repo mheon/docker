@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"syscall"
@@ -33,7 +34,7 @@ func Exec(container *libcontainer.Config, stdin io.Reader, stdout, stderr io.Wri
 	// pass the state and configuration to the child process
 	parent, child, err := newInitPipe()
 	if err != nil {
-		return -1, err
+		return -1, fmt.Errorf("New init pipe: %s", err)
 	}
 	defer parent.Close()
 
@@ -47,7 +48,7 @@ func Exec(container *libcontainer.Config, stdin io.Reader, stdout, stderr io.Wri
 
 	if err := command.Start(); err != nil {
 		child.Close()
-		return -1, err
+		return -1, fmt.Errorf("Create Command: %s", err)
 	}
 	child.Close()
 
@@ -63,6 +64,8 @@ func Exec(container *libcontainer.Config, stdin io.Reader, stdout, stderr io.Wri
 		return terminate(err)
 	}
 
+	log.Printf("Past GetProcessStartTime")
+
 	// Do this before syncing with child so that no children
 	// can escape the cgroup
 	cgroupPaths, err := SetupCgroups(container, command.Process.Pid)
@@ -71,10 +74,14 @@ func Exec(container *libcontainer.Config, stdin io.Reader, stdout, stderr io.Wri
 	}
 	defer cgroups.RemovePaths(cgroupPaths)
 
+	log.Printf("Past SetupCGroups")
+
 	var networkState network.NetworkState
 	if err := InitializeNetworking(container, command.Process.Pid, &networkState); err != nil {
 		return terminate(err)
 	}
+
+	log.Printf("Past InitializeNetworking")
 
 	state := &libcontainer.State{
 		InitPid:       command.Process.Pid,
@@ -331,10 +338,10 @@ func InitializeNetworking(container *libcontainer.Config, nspid int, networkStat
 	for _, config := range container.Networks {
 		strategy, err := network.GetStrategy(config.Type)
 		if err != nil {
-			return err
+			return fmt.Errorf("Get Strategy: %s", err)
 		}
 		if err := strategy.Create((*network.Network)(config), nspid, networkState); err != nil {
-			return err
+			return fmt.Errorf("Create Strategy: %s", err)
 		}
 	}
 	return nil

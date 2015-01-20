@@ -340,34 +340,34 @@ func (container *Container) Start() (err error) {
 	}()
 
 	if err := container.setupContainerDns(); err != nil {
-		return err
+		return fmt.Errorf("DNS: %s", err)
 	}
 	if err := container.Mount(); err != nil {
-		return err
+		return fmt.Errorf("Mount: %s", err)
 	}
 	if err := container.initializeNetworking(); err != nil {
-		return err
+		return fmt.Errorf("Networking: %s", err)
 	}
 	if err := container.updateParentsHosts(); err != nil {
-		return err
+		return fmt.Errorf("Update Hosts: %s", err)
 	}
 	container.verifyDaemonSettings()
 	if err := container.prepareVolumes(); err != nil {
-		return err
+		return fmt.Errorf("Volumes: %s", err)
 	}
 	linkedEnv, err := container.setupLinkedContainers()
 	if err != nil {
-		return err
+		return fmt.Errorf("Linked Containers: %s", err)
 	}
 	if err := container.setupWorkingDirectory(); err != nil {
-		return err
+		return fmt.Errorf("Working Directory: %s", err)
 	}
 	env := container.createDaemonEnvironment(linkedEnv)
 	if err := populateCommand(container, env); err != nil {
-		return err
+		return fmt.Errorf("Daemon Environment: %s", err)
 	}
 	if err := container.setupMounts(); err != nil {
-		return err
+		return fmt.Errorf("Mounts: %s", err)
 	}
 
 	return container.waitForStart()
@@ -1331,7 +1331,7 @@ func (container *Container) waitForStart() error {
 	select {
 	case <-container.monitor.startSignal:
 	case err := <-promise.Go(container.monitor.Start):
-		return err
+		return fmt.Errorf("Wait for Start: %s", err)
 	}
 
 	return nil

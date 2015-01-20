@@ -70,7 +70,7 @@ func (d *driver) Run(c *execdriver.Command, pipes *execdriver.Pipes, startCallba
 	// take the Command and populate the libcontainer.Config from it
 	container, err := d.createContainer(c)
 	if err != nil {
-		return execdriver.ExitStatus{ExitCode: -1}, err
+		return execdriver.ExitStatus{ExitCode: -1}, fmt.Errorf("Create Container: %s", err)
 	}
 
 	var term execdriver.Terminal
@@ -81,7 +81,7 @@ func (d *driver) Run(c *execdriver.Command, pipes *execdriver.Pipes, startCallba
 		term, err = execdriver.NewStdConsole(&c.ProcessConfig, pipes)
 	}
 	if err != nil {
-		return execdriver.ExitStatus{ExitCode: -1}, err
+		return execdriver.ExitStatus{ExitCode: -1}, fmt.Errorf("Create Console: %s", err)
 	}
 	c.ProcessConfig.Terminal = term
 
@@ -98,12 +98,12 @@ func (d *driver) Run(c *execdriver.Command, pipes *execdriver.Pipes, startCallba
 	)
 
 	if err := d.createContainerRoot(c.ID); err != nil {
-		return execdriver.ExitStatus{ExitCode: -1}, err
+		return execdriver.ExitStatus{ExitCode: -1}, fmt.Errorf("Create Container Root: %s", err)
 	}
 	defer d.cleanContainer(c.ID)
 
 	if err := d.writeContainerFile(container, c.ID); err != nil {
-		return execdriver.ExitStatus{ExitCode: -1}, err
+		return execdriver.ExitStatus{ExitCode: -1}, fmt.Errorf("Write Container File: %s", err)
 	}
 
 	execOutputChan := make(chan execOutput, 1)
@@ -137,7 +137,7 @@ func (d *driver) Run(c *execdriver.Command, pipes *execdriver.Pipes, startCallba
 				startCallback(&c.ProcessConfig, c.ContainerPid)
 			}
 		})
-		execOutputChan <- execOutput{exitCode, err}
+		execOutputChan <- execOutput{exitCode, fmt.Errorf("From libcontainer exec: %s", err)}
 	}()
 
 	select {

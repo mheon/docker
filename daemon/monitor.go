@@ -126,6 +126,8 @@ func (m *containerMonitor) Start() error {
 		if err := m.container.startLoggingToDisk(); err != nil {
 			m.resetContainer(false)
 
+			log.Errorf("Error starting logging to disk: %s", err)
+
 			return err
 		}
 
@@ -141,6 +143,8 @@ func (m *containerMonitor) Start() error {
 			if m.container.RestartCount == 0 {
 				m.container.ExitCode = -1
 				m.resetContainer(false)
+
+				log.Errorf("Error on container first run: %s", err)
 
 				return err
 			}

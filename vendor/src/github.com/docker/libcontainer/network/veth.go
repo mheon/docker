@@ -43,7 +43,7 @@ func (v *Veth) Create(n *Network, nspid int, networkState *NetworkState) error {
 		return err
 	}
 	if err := SetInterfaceInNamespacePid(name2, nspid); err != nil {
-		return err
+		return fmt.Errorf("Set Interface In Namespace Pid: %s", err)
 	}
 	networkState.VethHost = name1
 	networkState.VethChild = name2
