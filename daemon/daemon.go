@@ -16,7 +16,7 @@ import (
 
 	"github.com/docker/libcontainer"
 	"github.com/docker/libcontainer/label"
-	"github.com/docker/libcontainer/user"
+//	"github.com/docker/libcontainer/user"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/docker/api"
@@ -629,13 +629,30 @@ func (daemon *Daemon) setupUserMappings() (*execdriver.Users, error) {
 		users.HostUsers = true
 		return users, nil
 	}
-
+/*
 	dockerUser, err := user.LookupUser("docker")
 	if err != nil {
 		return nil, err
 	}
-
+*/
 	users.HostUsers = false
+
+	users.UidMappings=[]libcontainer.IDMap {
+		{
+			ContainerID: 0,
+			HostID: 0,
+			Size: 65536,
+		},
+	}
+
+	users.GidMappings=[]libcontainer.IDMap {
+		{
+			ContainerID: 0,
+			HostID: 0,
+			Size: 65536,
+		},
+	}
+/*
 	users.UidMappings = []libcontainer.IDMap {
 		{
 			ContainerID: 0,
@@ -671,6 +688,7 @@ func (daemon *Daemon) setupUserMappings() (*execdriver.Users, error) {
 			Size:        (65534 - dockerUser.Gid),
 		},
 	}
+*/
 
 	return users, nil
 }
