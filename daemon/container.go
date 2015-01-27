@@ -290,7 +290,7 @@ func populateCommand(c *Container, env []string) error {
 	}
 
 	users := &execdriver.Users{
-		HostUsers: true,
+		HostUsers: !c.hostConfig.UserNamespace,
 		RootUid:   0,
 		RootGid:   0,
 	}
