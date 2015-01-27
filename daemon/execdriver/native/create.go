@@ -45,6 +45,10 @@ func (d *driver) createContainer(c *execdriver.Command) (*libcontainer.Config, e
 		return nil, err
 	}
 
+	if err := d.createrUsers(container, c); err != nil {
+		return nil, err
+	}
+
 	if err := d.createNetwork(container, c); err != nil {
 		return nil, err
 	}
@@ -163,6 +167,70 @@ func (d *driver) createPid(container *libcontainer.Config, c *execdriver.Command
 	}
 
 	return nil
+}
+
+func (d *driver) createrUsers(container *libcontainer.Config, c *execdriver.Command) error {
+	if c.Users.HostUsers {
+		container.Namespaces.Remove(libcontainer.NEWUSER)
+		return nil
+	}
+
+	uidMapping, err := setupIDMapping(c.Users.RootUid)
+	if err != nil {
+		return err
+	}
+
+	gidMapping, err := setupIDMapping(c.Users.RootGid)
+	if err != nil {
+		return err
+	}
+
+	container.UidMappings = uidMapping
+	container.GidMappings = gidMapping
+
+	return nil
+}
+
+func setupIDMapping(rootId int) ([]libcontainer.IDMap, error) {
+	allMaps := []libcontainer.IDMap{}
+
+	if rootId > 65535 {
+		return nil, fmt.Errorf("Unsupported root user ID - too high!")
+	}
+
+	// Handle Root UID = 0
+	if rootId == 0 {
+		allMaps = append(allMaps, libcontainer.IDMap{
+			ContainerID: 0,
+			HostID:      0,
+			Size:        65536,
+		})
+
+		return allMaps, nil
+	}
+
+	// The root ID mapping
+	allMaps = append(allMaps, libcontainer.IDMap{
+		ContainerID: 0,
+		HostID:      rootId,
+		Size:        1,
+	})
+
+	// All mappings up to the root ID on the host
+	allMaps = append(allMaps, libcontainer.IDMap{
+		ContainerID: 1,
+		HostID:      1,
+		Size:        (rootId - 1),
+	})
+
+	// All mappings up to UID_MAX on the host
+	allMaps = append(allMaps, libcontainer.IDMap{
+		ContainerID: (rootId + 1),
+		HostID:      (rootId + 1),
+		Size:        (65536 - rootId),
+	})
+
+	return allMaps, nil
 }
 
 func (d *driver) setPrivileged(container *libcontainer.Config) (err error) {

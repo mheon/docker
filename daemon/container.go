@@ -289,6 +289,12 @@ func populateCommand(c *Container, env []string) error {
 		User:       c.Config.User,
 	}
 
+	users := &execdriver.Users{
+		HostUsers: true,
+		RootUid:   0,
+		RootGid:   0,
+	}
+
 	processConfig.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 	processConfig.Env = env
 
@@ -301,6 +307,7 @@ func populateCommand(c *Container, env []string) error {
 		Network:            en,
 		Ipc:                ipc,
 		Pid:                pid,
+		Users:              users,
 		Resources:          resources,
 		AllowedDevices:     allowedDevices,
 		AutoCreatedDevices: autoCreatedDevices,

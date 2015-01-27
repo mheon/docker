@@ -85,6 +85,12 @@ type Pid struct {
 	HostPid bool `json:"host_pid"`
 }
 
+type Users struct {
+	HostUsers bool `json:"host_users"`
+	RootUid   int  `json:"root_uid"`
+	RootGid   int  `json:"root_guid"`
+}
+
 type NetworkInterface struct {
 	Gateway              string `json:"gateway"`
 	IPAddress            string `json:"ip"`
@@ -143,6 +149,7 @@ type Command struct {
 	Network            *Network          `json:"network"`
 	Ipc                *Ipc              `json:"ipc"`
 	Pid                *Pid              `json:"pid"`
+	Users              *Users            `json:"users"`
 	Resources          *Resources        `json:"resources"`
 	Mounts             []Mount           `json:"mounts"`
 	AllowedDevices     []*devices.Device `json:"allowed_devices"`

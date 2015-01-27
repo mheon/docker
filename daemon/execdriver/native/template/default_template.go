@@ -31,6 +31,7 @@ func New() *libcontainer.Config {
 			{Type: "NEWIPC"},
 			{Type: "NEWPID"},
 			{Type: "NEWNET"},
+			{Type: "NEWUSER"},
 		}),
 		Cgroups: &cgroups.Cgroup{
 			Parent:          "docker",
