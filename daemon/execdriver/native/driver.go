@@ -136,8 +136,35 @@ func (d *driver) Run(c *execdriver.Command, pipes *execdriver.Pipes, startCallba
 			c.ProcessConfig.Env = container.Env
 			c.ProcessConfig.Dir = container.RootFs
 
+			if container.Namespaces.Contains(libcontainer.NEWUSER) {
+				namespaces.AddUidGidMappings(c.ProcessConfig.SysProcAttr, container)
+				// Default to root user when user namespaces are enabled.
+				if c.ProcessConfig.SysProcAttr.Credential == nil {
+					c.ProcessConfig.SysProcAttr.Credential = &syscall.Credential{}
+				}
+			}
+
 			return &c.ProcessConfig.Cmd
-		}, namespaces.DefaultSetupCommand, func() {
+		}, func(container *libcontainer.Config, console, dataPath, init string) *exec.Cmd {
+			command := new(exec.Cmd)
+
+			command.Args = []string{
+				DriverName,
+				"-root", filepath.Join(d.root, c.ID),
+				"-setup",
+				"--",
+				c.ProcessConfig.Entrypoint,
+			}
+
+			command.Path = d.initPath
+
+			command.Dir = container.RootFs
+			command.Env = container.Env
+
+			log.Printf("Start Command\n(%+v)", *command)
+
+			return command
+		}, func() {
 			close(waitForStart)
 			if startCallback != nil {
 				c.ContainerPid = c.ProcessConfig.Process.Pid

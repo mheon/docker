@@ -26,6 +26,7 @@ func initializer() {
 		pipe    = flag.Int("pipe", 0, "sync pipe fd")
 		console = flag.String("console", "", "console (pty slave) path")
 		root    = flag.String("root", ".", "root path for configuration files")
+		setup   = flag.Bool("setup", false, "invoke container setup for user namespaces")
 	)
 
 	flag.Parse()
@@ -47,8 +48,16 @@ func initializer() {
 		writeError(err)
 	}
 
-	if err := namespaces.Init(container, rootfs, *console, os.NewFile(uintptr(*pipe), "child"), flag.Args()); err != nil {
-		writeError(err)
+	if *setup {
+		if err := namespaces.SetupUser(container); err != nil {
+			writeError(err)
+		}
+		os.Exit(0)
+	} else {
+		if err := namespaces.Init(container, rootfs, *console, os.NewFile(uintptr(*pipe), "child"), flag.Args()); err != nil {
+			writeError(err)
+		}
+
 	}
 
 	panic("Unreachable")
