@@ -150,7 +150,9 @@ func (d *driver) Run(c *execdriver.Command, pipes *execdriver.Pipes, startCallba
 
 			command.Args = []string{
 				DriverName,
+				"-console", console,
 				"-root", filepath.Join(d.root, c.ID),
+				"-datapath", dataPath,
 				"-setup",
 				"--",
 				c.ProcessConfig.Entrypoint,
@@ -160,8 +162,6 @@ func (d *driver) Run(c *execdriver.Command, pipes *execdriver.Pipes, startCallba
 
 			command.Dir = container.RootFs
 			command.Env = container.Env
-
-			log.Printf("Start Command\n(%+v)", *command)
 
 			return command
 		}, func() {

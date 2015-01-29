@@ -23,10 +23,11 @@ func initializer() {
 	runtime.LockOSThread()
 
 	var (
-		pipe    = flag.Int("pipe", 0, "sync pipe fd")
-		console = flag.String("console", "", "console (pty slave) path")
-		root    = flag.String("root", ".", "root path for configuration files")
-		setup   = flag.Bool("setup", false, "invoke container setup for user namespaces")
+		pipe     = flag.Int("pipe", 0, "sync pipe fd")
+		console  = flag.String("console", "", "console (pty slave) path")
+		root     = flag.String("root", ".", "root path for configuration files")
+		setup    = flag.Bool("setup", false, "invoke container setup for user namespaces")
+		datapath = flag.String("datapath", ".", "datapath for setup command")
 	)
 
 	flag.Parse()
@@ -49,10 +50,9 @@ func initializer() {
 	}
 
 	if *setup {
-		if err := namespaces.SetupUser(container); err != nil {
+		if err := namespaces.SetupContainer(container, *datapath, rootfs, *console); err != nil {
 			writeError(err)
 		}
-		os.Exit(0)
 	} else {
 		if err := namespaces.Init(container, rootfs, *console, os.NewFile(uintptr(*pipe), "child"), flag.Args()); err != nil {
 			writeError(err)
