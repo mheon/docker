@@ -119,18 +119,21 @@ func Apply(c *cgroups.Cgroup, pid int) (map[string]string, error) {
 			newProp("CPUShares", uint64(c.CpuShares)))
 	}
 
+	if c.BlkioWeight != 0 {
+		properties = append(properties,
+			newProp("BlockIOWeight", uint64(c.BlkioWeight)))
+	}
+
 	if _, err := theConn.StartTransientUnit(unitName, "replace", properties...); err != nil {
 		return nil, err
 	}
 
-	if !c.AllowAllDevices {
-		if err := joinDevices(c, pid); err != nil {
-			return nil, err
-		}
+	if err := joinDevices(c, pid); err != nil {
+		return nil, err
 	}
 
 	// -1 disables memorySwap
-	if c.MemorySwap >= 0 && (c.Memory != 0 || c.MemorySwap > 0) {
+	if c.MemorySwap >= 0 && c.Memory != 0 {
 		if err := joinMemory(c, pid); err != nil {
 			return nil, err
 		}
@@ -267,13 +270,15 @@ func joinDevices(c *cgroups.Cgroup, pid int) error {
 		return err
 	}
 
-	if err := writeFile(path, "devices.deny", "a"); err != nil {
-		return err
-	}
-
-	for _, dev := range c.AllowedDevices {
-		if err := writeFile(path, "devices.allow", dev.GetCgroupAllowString()); err != nil {
+	if !c.AllowAllDevices {
+		if err := writeFile(path, "devices.deny", "a"); err != nil {
 			return err
+		}
+
+		for _, dev := range c.AllowedDevices {
+			if err := writeFile(path, "devices.allow", dev.GetCgroupAllowString()); err != nil {
+				return err
+			}
 		}
 	}
 

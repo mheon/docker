@@ -4,6 +4,7 @@ import (
 	"github.com/docker/libcontainer/cgroups"
 	"github.com/docker/libcontainer/mount"
 	"github.com/docker/libcontainer/network"
+	"github.com/docker/libcontainer/security/seccomp"
 )
 
 type MountConfig mount.MountConfig
@@ -124,6 +125,15 @@ type Config struct {
 	// AdditionalGroups specifies the gids that should be added to supplementary groups
 	// in addition to those that the user belongs to.
 	AdditionalGroups []int `json:"additional_groups,omitempty"`
+
+	// UidMappings is an array of User ID mappings for User Namespaces
+	UidMappings []IDMap `json:"uid_mappings,omitempty"`
+
+	// GidMappings is an array of Group ID mappings for User Namespaces
+	GidMappings []IDMap `json:"gid_mappings,omitempty"`
+
+	// SeccompConfig holds information on system calls to be restricted in the container
+	SeccompConfig seccomp.SeccompConfig `json:"seccomp_config,omitempty"`
 }
 
 // Routes can be specified to create entries in the route table as the container is started
@@ -151,4 +161,11 @@ type Rlimit struct {
 	Type int    `json:"type,omitempty"`
 	Hard uint64 `json:"hard,omitempty"`
 	Soft uint64 `json:"soft,omitempty"`
+}
+
+// IDMap represents UID/GID Mappings for User Namespaces.
+type IDMap struct {
+	ContainerID int `json:"container_id,omitempty"`
+	HostID      int `json:"host_id,omitempty"`
+	Size        int `json:"size,omitempty"`
 }

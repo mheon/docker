@@ -1,4 +1,3 @@
-
 all:
 	docker build -t dockercore/libcontainer .
 
@@ -18,7 +17,7 @@ direct-test-short:
 	go test $(TEST_TAGS) -cover -test.short -v $(GO_PACKAGES)
 
 direct-build:
-	go build -v $(GO_PACKAGES)
+	go build $(TEST_TAGS) -v $(GO_PACKAGES)
 
 direct-install:
-	go install -v $(GO_PACKAGES)
+	go install $(TEST_TAGS) -v $(GO_PACKAGES)
