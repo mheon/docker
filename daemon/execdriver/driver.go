@@ -9,6 +9,7 @@ import (
 
 	"github.com/docker/libcontainer"
 	"github.com/docker/libcontainer/devices"
+	"github.com/docker/libcontainer/security/seccomp"
 )
 
 // Context is a generic key value pair that allows
@@ -134,25 +135,26 @@ type ProcessConfig struct {
 
 // Process wrapps an os/exec.Cmd to add more metadata
 type Command struct {
-	ID                 string            `json:"id"`
-	Rootfs             string            `json:"rootfs"` // root fs of the container
-	ReadonlyRootfs     bool              `json:"readonly_rootfs"`
-	InitPath           string            `json:"initpath"` // dockerinit
-	WorkingDir         string            `json:"working_dir"`
-	ConfigPath         string            `json:"config_path"` // this should be able to be removed when the lxc template is moved into the driver
-	Network            *Network          `json:"network"`
-	Ipc                *Ipc              `json:"ipc"`
-	Pid                *Pid              `json:"pid"`
-	Resources          *Resources        `json:"resources"`
-	Mounts             []Mount           `json:"mounts"`
-	AllowedDevices     []*devices.Device `json:"allowed_devices"`
-	AutoCreatedDevices []*devices.Device `json:"autocreated_devices"`
-	CapAdd             []string          `json:"cap_add"`
-	CapDrop            []string          `json:"cap_drop"`
-	ContainerPid       int               `json:"container_pid"`  // the pid for the process inside a container
-	ProcessConfig      ProcessConfig     `json:"process_config"` // Describes the init process of the container.
-	ProcessLabel       string            `json:"process_label"`
-	MountLabel         string            `json:"mount_label"`
-	LxcConfig          []string          `json:"lxc_config"`
-	AppArmorProfile    string            `json:"apparmor_profile"`
+	ID                 string                `json:"id"`
+	Rootfs             string                `json:"rootfs"` // root fs of the container
+	ReadonlyRootfs     bool                  `json:"readonly_rootfs"`
+	InitPath           string                `json:"initpath"` // dockerinit
+	WorkingDir         string                `json:"working_dir"`
+	ConfigPath         string                `json:"config_path"` // this should be able to be removed when the lxc template is moved into the driver
+	Network            *Network              `json:"network"`
+	Ipc                *Ipc                  `json:"ipc"`
+	Pid                *Pid                  `json:"pid"`
+	Resources          *Resources            `json:"resources"`
+	Mounts             []Mount               `json:"mounts"`
+	AllowedDevices     []*devices.Device     `json:"allowed_devices"`
+	AutoCreatedDevices []*devices.Device     `json:"autocreated_devices"`
+	CapAdd             []string              `json:"cap_add"`
+	CapDrop            []string              `json:"cap_drop"`
+	ContainerPid       int                   `json:"container_pid"`  // the pid for the process inside a container
+	ProcessConfig      ProcessConfig         `json:"process_config"` // Describes the init process of the container.
+	ProcessLabel       string                `json:"process_label"`
+	MountLabel         string                `json:"mount_label"`
+	LxcConfig          []string              `json:"lxc_config"`
+	AppArmorProfile    string                `json:"apparmor_profile"`
+	SeccompConfig      seccomp.SeccompConfig `json:"seccomp_config"`
 }

@@ -32,6 +32,7 @@ func (d *driver) createContainer(c *execdriver.Command) (*libcontainer.Config, e
 	container.MountConfig.DeviceNodes = c.AutoCreatedDevices
 	container.RootFs = c.Rootfs
 	container.MountConfig.ReadonlyFs = c.ReadonlyRootfs
+	container.SeccompConfig = c.SeccompConfig
 
 	// check to see if we are running in ramdisk to disable pivot root
 	container.MountConfig.NoPivotRoot = os.Getenv("DOCKER_RAMDISK") != ""
@@ -168,6 +169,7 @@ func (d *driver) createPid(container *libcontainer.Config, c *execdriver.Command
 func (d *driver) setPrivileged(container *libcontainer.Config) (err error) {
 	container.Capabilities = capabilities.GetAllCapabilities()
 	container.Cgroups.AllowAllDevices = true
+	container.SeccompConfig.Enable = false
 
 	hostDeviceNodes, err := devices.GetHostDeviceNodes()
 	if err != nil {
