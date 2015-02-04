@@ -98,6 +98,9 @@ if [ "$DOCKER_EXECDRIVER" = 'lxc' ]; then
 	DOCKER_BUILDTAGS+=' test_no_exec'
 fi
 
+# TODO MAKE CONDITIONAL
+DOCKER_BUILDTAGS+=' seccomp'
+
 # Use these flags when compiling the tests and final binary
 LDFLAGS='
 	-X '$DOCKER_PKG'/dockerversion.GITCOMMIT "'$GITCOMMIT'"

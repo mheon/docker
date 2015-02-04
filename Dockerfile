@@ -49,6 +49,12 @@ RUN apt-get update && apt-get install -y \
 	ruby1.9.1 \
 	ruby1.9.1-dev \
 	s3cmd=1.1.0* \
+	libseccomp2 \
+	libseccomp-dev \
+	autoconf \
+	autotools-dev \
+	make \
+	libtool \
 	--no-install-recommends
 
 # Get lvm2 source for compiling statically
@@ -71,6 +77,12 @@ RUN cd /usr/src/lxc \
 	&& make \
 	&& make install \
 	&& ldconfig
+
+
+# Manual build of libseccomp2
+RUN git clone http://git.code.sf.net/p/libseccomp/libseccomp
+RUN cd /libseccomp && ./autogen.sh && ./configure --enable-static && make
+RUN mv /libseccomp/src/.libs/libseccomp.a /usr/lib/libseccomp.a
 
 # Install Go
 ENV GO_VERSION 1.4.2
