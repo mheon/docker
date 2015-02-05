@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/docker/libcontainer/label"
+	"github.com/docker/libcontainer/security/seccomp"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/docker/api"
@@ -625,6 +626,73 @@ func parseSecurityOpt(container *Container, config *runconfig.HostConfig) error 
 			labelOpts = append(labelOpts, con[1])
 		case "apparmor":
 			container.AppArmorProfile = con[1]
+		case "seccomp":
+			seccompOpts := strings.SplitN(con[1], ":", 2)
+			switch seccompOpts[0] {
+			case "add_arch":
+				if len(seccompOpts) < 2 {
+					return fmt.Errorf("Must provide architecture to add")
+				}
+				architectures := strings.Split(seccompOpts[1], ",")
+				container.SeccompConfig.Architectures = append(container.SeccompConfig.Architectures, architectures...)
+			case "allow":
+				if len(seccompOpts) < 2 {
+					return fmt.Errorf("Must provide syscall(s) to allow")
+				}
+				syscalls := strings.Split(seccompOpts[1], ",")
+				for _, call := range syscalls {
+					if container.SeccompConfig.Whitelist {
+						callStruct := seccomp.BlockedSyscall{
+							Name: call,
+						}
+						container.SeccompConfig.Syscalls = append(container.SeccompConfig.Syscalls, callStruct)
+					} else {
+						newSyscallList := []seccomp.BlockedSyscall{}
+						for _, blockedCall := range container.SeccompConfig.Syscalls {
+							if blockedCall.Name != call {
+								newSyscallList = append(newSyscallList, blockedCall)
+							}
+						}
+						container.SeccompConfig.Syscalls = newSyscallList
+					}
+				}
+			case "deny":
+				if len(seccompOpts) < 2 {
+					return fmt.Errorf("Must provide syscall(s) to deny")
+				}
+				syscalls := strings.Split(seccompOpts[1], ",")
+				for _, call := range syscalls {
+					if !container.SeccompConfig.Whitelist {
+						callStruct := seccomp.BlockedSyscall{
+							Name: call,
+						}
+						container.SeccompConfig.Syscalls = append(container.SeccompConfig.Syscalls, callStruct)
+					} else {
+						newSyscallList := []seccomp.BlockedSyscall{}
+						for _, blockedCall := range container.SeccompConfig.Syscalls {
+							if blockedCall.Name != call {
+								newSyscallList = append(newSyscallList, blockedCall)
+							}
+						}
+						container.SeccompConfig.Syscalls = newSyscallList
+					}
+				}
+			case "disable":
+				container.SeccompConfig.Enable = false
+			case "enable":
+				container.SeccompConfig.Enable = true
+			case "config":
+				if len(seccompOpts) < 2 {
+					return fmt.Errorf("Must provide path to configuration file")
+				}
+				config, err := parseSeccompConfig(seccompOpts[1])
+				if err != nil {
+					return fmt.Errorf("Error parsing config: %s", err)
+				}
+				container.SeccompConfig = config
+			default:
+				return fmt.Errorf("Invalid --security-opt: %q", opt)
+			}
 		default:
 			return fmt.Errorf("Invalid --security-opt: %q", opt)
 		}
