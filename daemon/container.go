@@ -18,6 +18,7 @@ import (
 	"github.com/docker/libcontainer/configs"
 	"github.com/docker/libcontainer/devices"
 	"github.com/docker/libcontainer/label"
+	"github.com/docker/libcontainer/security/seccomp"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/docker/daemon/execdriver"
@@ -84,6 +85,8 @@ type Container struct {
 
 	command *execdriver.Command
 	StreamConfig
+
+	SeccompConfig seccomp.SeccompConfig
 
 	daemon                   *Daemon
 	MountLabel, ProcessLabel string
@@ -345,6 +348,7 @@ func populateCommand(c *Container, env []string) error {
 		MountLabel:         c.GetMountLabel(),
 		LxcConfig:          lxcConfig,
 		AppArmorProfile:    c.AppArmorProfile,
+		SeccompConfig:      c.SeccompConfig,
 	}
 
 	return nil
