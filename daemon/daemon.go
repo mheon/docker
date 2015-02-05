@@ -662,6 +662,7 @@ func (daemon *Daemon) newContainer(name string, config *runconfig.Config, imgID 
 		ExecDriver:      daemon.execDriver.Name(),
 		State:           NewState(),
 		execCommands:    newExecStore(),
+		SeccompConfig:   daemon.config.SeccompConfig,
 	}
 	container.root = daemon.containerRoot(container.ID)
 	return container, err
@@ -814,10 +815,17 @@ func NewDaemonFromDirectory(config *Config, eng *engine.Engine) (*Daemon, error)
 	}
 	config.DisableNetwork = config.BridgeIface == disableNetworkBridge
 
+	// Parse the Seccomp configuration
+	seccompConfig, err := parseSeccompConfig(config.SeccompConfigPath)
+	if err != nil {
+		return nil, err
+	}
+	config.SeccompConfig = seccompConfig
+
 	// Claim the pidfile first, to avoid any and all unexpected race conditions.
 	// Some of the init doesn't need a pidfile lock - but let's not try to be smart.
 	if config.Pidfile != "" {
-		if err := utils.CreatePidFile(config.Pidfile); err != nil {
+		if err = utils.CreatePidFile(config.Pidfile); err != nil {
 			return nil, err
 		}
 		eng.OnShutdown(func() {

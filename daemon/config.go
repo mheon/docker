@@ -1,11 +1,14 @@
 package daemon
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"net"
 
 	"github.com/docker/docker/daemon/networkdriver"
 	"github.com/docker/docker/opts"
 	flag "github.com/docker/docker/pkg/mflag"
+	"github.com/docker/libcontainer/security/seccomp"
 )
 
 const (
@@ -44,6 +47,8 @@ type Config struct {
 	Context                     map[string][]string
 	TrustKeyPath                string
 	Labels                      []string
+	SeccompConfigPath           string
+	SeccompConfig               seccomp.SeccompConfig
 }
 
 // InstallFlags adds command-line options to the top-level flag parser for
@@ -69,6 +74,7 @@ func (config *Config) InstallFlags() {
 	flag.IntVar(&config.Mtu, []string{"#mtu", "-mtu"}, 0, "Set the containers network MTU")
 	flag.StringVar(&config.SocketGroup, []string{"G", "-group"}, "docker", "Group for the unix socket")
 	flag.BoolVar(&config.EnableCors, []string{"#api-enable-cors", "-api-enable-cors"}, false, "Enable CORS headers in the remote API")
+	flag.StringVar(&config.SeccompConfigPath, []string{"-seccomp-config"}, "", "Enable Seccomp syscall filtering")
 	opts.IPVar(&config.DefaultIp, []string{"#ip", "-ip"}, "0.0.0.0", "Default IP when binding container ports")
 	opts.ListVar(&config.GraphOptions, []string{"-storage-opt"}, "Set storage driver options")
 	// FIXME: why the inconsistency between "hosts" and "sockets"?
@@ -82,4 +88,21 @@ func getDefaultNetworkMtu() int {
 		return iface.MTU
 	}
 	return defaultNetworkMtu
+}
+
+func parseSeccompConfig(path string) (seccomp.SeccompConfig, error) {
+	var config seccomp.SeccompConfig
+
+	if path == "" {
+		return config, nil
+	}
+
+	contents, err := ioutil.ReadFile(path)
+	if err != nil {
+		return config, err
+	}
+
+	err = json.Unmarshal(contents, &config)
+
+	return config, err
 }
