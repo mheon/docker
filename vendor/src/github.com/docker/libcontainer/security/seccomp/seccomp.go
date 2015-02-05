@@ -126,7 +126,9 @@ func blockCall(isWhitelist bool, filter *libseccomp.ScmpFilter, call BlockedSysc
 			}
 
 			newCond, err := libseccomp.MakeCondition(cond.Argument, compareOp, cond.ValueOne, cond.ValueTwo)
-
+			if err != nil {
+				return err
+			}
 
 			conditions = append(conditions, newCond)
 		}

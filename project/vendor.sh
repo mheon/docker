@@ -69,7 +69,7 @@ if [ "$1" = '--go' ]; then
 fi
 
 # HACK HACK HACK
-clone git github.com/mheon/libcontainer f8ef44f6fd7b81eacd7397fd41dcf68f650c0e73
+clone git github.com/mheon/libcontainer 64925b9d8597308b076be89ec1fe244ec20b1c8d
 rm -rf src/github.com/docker/libcontainer
 mkdir -p src/github.com/docker
 mv src/github.com/mheon/libcontainer src/github.com/docker/
