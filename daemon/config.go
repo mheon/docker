@@ -149,7 +149,7 @@ func parseSeccompConfig(path string) (seccomp.SeccompConfig, error) {
 
 			for _, arg := range argumentsList {
 				// Trim all spaces
-				argTrimmed := strings.Trim(arg, " ")
+				argTrimmed := strings.Replace(arg, " ", "", -1)
 
 				// If the argument is empty, continue
 				if len(argTrimmed) == 0 {
