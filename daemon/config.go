@@ -146,7 +146,7 @@ func parseSeccompConfig(path string) (seccomp.SeccompConfig, error) {
 
 			// Get arguments and syscall substrings
 			arguments := line[argsStartIndex+1:argsEndIndex]
-			syscall := strings.TrimRight(line[0:argsStartIndex], " ")
+			syscall := strings.TrimSpace(line[0:argsStartIndex])
 			if len(syscall) == 0 {
 				return config, fmt.Errorf("Error on line %d of Seccomp config: Must provide name of syscall to block!", (i + 2))
 			}
@@ -163,10 +163,13 @@ func parseSeccompConfig(path string) (seccomp.SeccompConfig, error) {
 				// If the argument is empty, continue
 				if len(argTrimmed) == 0 {
 					continue
+				} else if len(argTrimmed) < 2 {
+					// At the very minimum an argument is a set of parens
+					return config, fmt.Errorf("Error on line %d of Seccomp config: Arguments must be wrapped by parentheses!", (i + 2))
 				}
 
 				// Each argument is wrapped in parens
-				argNoParens := argTrimmed[1:len(arg)-1]
+				argNoParens := strings.TrimPrefix(strings.TrimSuffix(argTrimmed, ")"), "(")
 
 				// Each will have 3 or 4 comma-separated fields
 				fields := strings.Split(argNoParens, ",")
