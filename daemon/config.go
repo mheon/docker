@@ -157,13 +157,16 @@ func parseSeccompConfig(path string) (seccomp.SeccompConfig, error) {
 			argumentsList := strings.Split(arguments, ";")
 
 			for _, arg := range argumentsList {
+				// Trim all spaces
+				argTrimmed := strings.Trim(arg, " ")
+
 				// If the argument is empty, continue
-				if len(arg) == 0 {
+				if len(argTrimmed) == 0 {
 					continue
 				}
 
 				// Each argument is wrapped in parens
-				argNoParens := arg[1:len(arg)-1]
+				argNoParens := argTrimmed[1:len(arg)-1]
 
 				// Each will have 3 or 4 comma-separated fields
 				fields := strings.Split(argNoParens, ",")
