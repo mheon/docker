@@ -179,6 +179,7 @@ func (d *driver) createPid(container *configs.Config, c *execdriver.Command) err
 func (d *driver) setPrivileged(container *configs.Config) (err error) {
 	container.Capabilities = execdriver.GetAllCapabilities()
 	container.Cgroups.AllowAllDevices = true
+	container.SeccompConfig.Enable = false
 
 	hostDevices, err := devices.HostDevices()
 	if err != nil {
