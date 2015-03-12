@@ -49,6 +49,10 @@ RUN apt-get update && apt-get install -y \
 	ruby1.9.1 \
 	ruby1.9.1-dev \
 	s3cmd=1.1.0* \
+	autoconf \
+	autotools-dev \
+	make \
+	libtool \
 	--no-install-recommends
 
 # Get lvm2 source for compiling statically
@@ -61,6 +65,10 @@ RUN cd /usr/local/lvm2 \
 	&& make device-mapper \
 	&& make install_device-mapper
 # see https://git.fedorahosted.org/cgit/lvm2.git/tree/INSTALL
+
+# Compile and install libseccomp
+RUN git clone https://github.com/seccomp/libseccomp
+RUN cd /libseccomp && git checkout v2.2.0 && ./autogen.sh && ./configure --enable-static && make && make check && make install
 
 # Install lxc
 ENV LXC_VERSION 1.0.7
