@@ -645,7 +645,7 @@ func parseSecurityOpt(container *Container, config *runconfig.HostConfig) error 
 				}
 				syscalls := strings.Split(seccompOpts[1], ",")
 				for _, call := range syscalls {
-					if container.SeccompConfig.Whitelist {
+					if container.SeccompConfig.WhitelistToggle {
 						callStruct := seccomp.BlockedSyscall{
 							Name: call,
 						}
@@ -666,7 +666,7 @@ func parseSecurityOpt(container *Container, config *runconfig.HostConfig) error 
 				}
 				syscalls := strings.Split(seccompOpts[1], ",")
 				for _, call := range syscalls {
-					if !container.SeccompConfig.Whitelist {
+					if !container.SeccompConfig.WhitelistToggle {
 						callStruct := seccomp.BlockedSyscall{
 							Name: call,
 						}

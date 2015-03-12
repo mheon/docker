@@ -118,9 +118,9 @@ func parseSeccompConfig(path string) (seccomp.SeccompConfig, error) {
 
 	switch strings.ToLower(lines[0]) {
 	case "whitelist":
-		config.Whitelist = true;
+		config.WhitelistToggle = true;
 	case "blacklist":
-		config.Whitelist = false;
+		config.WhitelistToggle = false;
 	default:
 		return config, fmt.Errorf("Error on line 1 of Seccomp config: Config file must start with WHITELIST or BLACKLIST!")
 	}
