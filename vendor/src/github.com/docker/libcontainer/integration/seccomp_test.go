@@ -78,7 +78,7 @@ func TestSeccompDenyGetcwd(t *testing.T) {
 	}
 }
 
-func TestSeccompPermitIoctlConditional(t *testing.T) {
+func TestSeccompPermitWriteConditional(t *testing.T) {
 	if testing.Short() {
 		return
 	}
@@ -95,7 +95,7 @@ func TestSeccompPermitIoctlConditional(t *testing.T) {
 		WhitelistToggle: false,
 		Syscalls: []seccomp.BlockedSyscall{
 			{
-				Name: "ioctl",
+				Name: "write",
 				Conditions: []seccomp.SyscallCondition{
 					{
 						Argument: 0,
@@ -115,7 +115,7 @@ func TestSeccompPermitIoctlConditional(t *testing.T) {
 
 	buffers := newStdBuffers()
 	dmesg := &libcontainer.Process{
-		Args:   []string{"busybox", "date"},
+		Args:   []string{"busybox", "ls", "/"},
 		Env:    standardEnvironment,
 		Stdin:  buffers.Stdin,
 		Stdout: buffers.Stdout,
@@ -131,7 +131,7 @@ func TestSeccompPermitIoctlConditional(t *testing.T) {
 	}
 }
 
-func TestSeccompDenyIoctlConditional(t *testing.T) {
+func TestSeccompDenyWriteConditional(t *testing.T) {
 	if testing.Short() {
 		return
 	}
@@ -148,7 +148,7 @@ func TestSeccompDenyIoctlConditional(t *testing.T) {
 		WhitelistToggle: false,
 		Syscalls: []seccomp.BlockedSyscall{
 			{
-				Name: "ioctl",
+				Name: "write",
 				Conditions: []seccomp.SyscallCondition{
 					{
 						Argument: 0,
@@ -168,7 +168,7 @@ func TestSeccompDenyIoctlConditional(t *testing.T) {
 
 	buffers := newStdBuffers()
 	dmesg := &libcontainer.Process{
-		Args:   []string{"busybox", "ipaddr"},
+		Args:   []string{"busybox", "ls", "does_not_exist"},
 		Env:    standardEnvironment,
 		Stdin:  buffers.Stdin,
 		Stdout: buffers.Stdout,
@@ -199,7 +199,8 @@ func TestSeccompDenyIoctlConditional(t *testing.T) {
 		t.Fatalf("Busybox should fail with negative exit code, instead got %d!", exitCode)
 	}
 
-	expected := "ipaddr: SIOCGIFTXQLEN: Operation not permitted"
+	// We're denying write to stderr, so we expect an empty buffer
+	expected := ""
 	actual := strings.Trim(buffers.Stderr.String(), "\n")
 	if actual != expected {
 		t.Fatalf("Expected output %s but got %s\n", expected, actual)
