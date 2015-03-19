@@ -76,7 +76,7 @@ mkdir -p src/github.com/docker/distribution
 mv tmp-digest src/github.com/docker/distribution/digest
 
 ### HACK HACK HACK use forked libcontainer
-clone git github.com/mheon/libcontainer 34c8e1682ce9eae24c01b97703ec02218262656b
+clone git github.com/mheon/libcontainer 5573954d54b2089a7c6e2c4b7cfa9d1b0122369d
 rm -rf src/github.com/docker/libcontainer
 mv src/github.com/mheon/libcontainer src/github.com/docker/libcontainer
 # see src/github.com/docker/libcontainer/update-vendor.sh which is the "source of truth" for libcontainer deps (just like this file)
