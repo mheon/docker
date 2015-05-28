@@ -168,3 +168,7 @@ func (container *Container) DisableLink(name string) {
 func (container *Container) UnmountVolumes(forceSyscall bool) error {
 	return nil
 }
+
+func (container *Container) registerMachine() {
+	return nil
+}
