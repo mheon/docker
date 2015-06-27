@@ -207,8 +207,8 @@ func (daemon *Daemon) register(container *Container, updateSuffixarray bool) err
 
 	if container.IsRunning() {
 		logrus.Debugf("killing old running container %s", container.ID)
-
-		container.SetStopped(&execdriver.ExitStatus{ExitCode: 0})
+		// Set exit code to 128 + SIGKILL (9) to properly represent unsuccessful exit
+		container.SetStopped(&execdriver.ExitStatus{ExitCode: 137})
 
 		// use the current driver and ensure that the container is dead x.x
 		cmd := &execdriver.Command{
@@ -609,17 +609,6 @@ func NewDaemon(config *Config, registryService *registry.Service) (daemon *Daemo
 	// set up SIGUSR1 handler to dump Go routine stacks
 	setupSigusr1Trap()
 
-	// set up the tmpDir to use a canonical path
-	tmp, err := tempDir(config.Root)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to get the TempDir under %s: %s", config.Root, err)
-	}
-	realTmp, err := fileutils.ReadSymlinkedDirectory(tmp)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to get the full path to the TempDir (%s): %s", tmp, err)
-	}
-	os.Setenv("TMPDIR", realTmp)
-
 	// get the canonical path to the Docker root directory
 	var realRoot string
 	if _, err := os.Stat(config.Root); err != nil && os.IsNotExist(err) {
@@ -635,6 +624,17 @@ func NewDaemon(config *Config, registryService *registry.Service) (daemon *Daemo
 	if err := system.MkdirAll(config.Root, 0700); err != nil && !os.IsExist(err) {
 		return nil, err
 	}
+
+	// set up the tmpDir to use a canonical path
+	tmp, err := tempDir(config.Root)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get the TempDir under %s: %s", config.Root, err)
+	}
+	realTmp, err := fileutils.ReadSymlinkedDirectory(tmp)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get the full path to the TempDir (%s): %s", tmp, err)
+	}
+	os.Setenv("TMPDIR", realTmp)
 
 	// Set the default driver
 	graphdriver.DefaultDriver = config.GraphDriver

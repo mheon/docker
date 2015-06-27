@@ -18,7 +18,7 @@ clone git golang.org/x/net 3cffabab72adf04f8e3b01c5baf775361837b5fe https://gith
 clone hg code.google.com/p/gosqlite 74691fb6f837
 
 #get libnetwork packages
-clone git github.com/docker/libnetwork 1aaf1047fd48345619a875184538a0eb6c6cfb2a
+clone git github.com/docker/libnetwork 82a1f5634904b57e619fd715ded6903727e00143
 clone git github.com/armon/go-metrics eb0af217e5e9747e41dd5303755356b62d28e3ec
 clone git github.com/hashicorp/go-msgpack 71c2886f5a673a35f909803f38ece5810165097b
 clone git github.com/hashicorp/memberlist 9a1e242e454d2443df330bdd51a436d5a9058fc4
@@ -41,5 +41,10 @@ clone git github.com/godbus/dbus v2
 clone git github.com/syndtr/gocapability 66ef2aa7a23ba682594e2b6f74cf40c0692b49fb
 clone git github.com/golang/protobuf 655cdfa588ea
 clone git github.com/Graylog2/go-gelf 6c62a85f1d47a67f2a5144c0e745b325889a8120
+
+clone git github.com/fluent/fluent-logger-golang v1.0.0
+# fluent-logger-golang deps
+clone git github.com/philhofer/fwd 899e4efba8eaa1fea74175308f3fae18ff3319fa
+clone git github.com/tinylib/msgp 75ee40d2601edf122ef667e2a07d600d4c44490c
 
 clean
